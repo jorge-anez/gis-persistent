@@ -19,7 +19,6 @@ public class EventResource {
     EventService eventService;
     private WKTReader reader = new WKTReader();
 
-
     @RequestMapping(value = "/index", produces = MediaType.TEXT_HTML_VALUE)
     public String greeting() {
         return "Hello, it is person rest API";
