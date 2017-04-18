@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://java.sun.com/jsf/html" xmlns:p="http://primefaces.org/ui">
+
+<h:head>
+    <title>Registro Asistentes</title>
+    <meta http-equiv="cache-control" content="max-age=0" />
+    <meta http-equiv="cache-control" content="no-cache" />
+    <meta http-equiv="expires" content="0" />
+    <meta http-equiv="pragma" content="no-cache" />
+    <style type="text/css">
+        .ui-button-text {
+            padding: 4px !important;
+        }
+    </style>
+</h:head>
+<h:body>
+    <f:event type="preRenderView" listener="#{userBean.check}" />
+    <p:layout fullPage="true">
+        <p:layoutUnit position="west">
+            <h:form>
+                <p:commandButton value="Logout" action="#{userBean.logout}" ajax="false" />
+            </h:form>
+            <h:form id="personForm">
+                <p:growl id="growl" showDetail="true" life="1500" />
+                <h:panelGrid id="grid" columns="2" style="margin-bottom:10px">
+                    <p:outputLabel for="firstname" value="Nombre:"/>
+                    <p:inputText id="firstname" value="#{personBean.personSelected.firstName}" required="true" requiredMessage="Nombre es requerido." disabled="#{personBean.disabledFields}"/>
+                    <p:outputLabel for="surname" value="Apellido:" />
+                    <p:inputText id="surname" value="#{personBean.personSelected.lastName}" required="true" requiredMessage="Apellido es requerido." disabled="#{personBean.disabledFields}"/>
+                    <p:outputLabel for="controlNumber" value="N° Control:" />
+                    <p:inputText id="controlNumber" value="#{personBean.personSelected.controlNumber}" disabled="#{personBean.disabledFields}" converterMessage="Invalido!!"/>
+                    <p:outputLabel value="Iglesia:" for="churchUIID" />
+
+                    <p:selectOneMenu id="churchUIID" value="#{personBean.localChurchSelected}" filter="true" filterMatchMode="startsWith" converter="localChurchConverter">
+                        <f:selectItem itemLabel="Seleccione" itemValue="" />
+                        <f:selectItems value="#{personBean.churchDTOs}" var="church"
+                                       itemLabel="#{church.name}" itemValue="#{church}"/>
+                    </p:selectOneMenu>
+
+
+                    <f:facet name="header">
+                        <p:outputLabel value="Registro"/>
+                    </f:facet>
+                    <f:facet name="footer">
+                        <p:commandButton value="Nuevo" id="btnNew" process="@all" update=":personForm, :tablePersonForm" actionListener="#{personBean.newPerson}" />
+                        <p:commandButton value="Editar" id="btnEdit" process="@all" update=":personForm, :tablePersonForm" actionListener="#{personBean.editPerson}" disabled="#{!personBean.editable}" />
+                        <p:commandButton value="Guardar" id="btnSave" process="@all" update=":personForm, :tablePersonForm" actionListener="#{personBean.savePerson}" disabled="#{personBean.disabledFields}"/>
+                        <p:commandButton value="Eliminar" id="btnEliminar" process="@all" update=":personForm, :tablePersonForm" actionListener="#{personBean.removePerson}" disabled="#{!personBean.editable}" />
+                    </f:facet>
+                </h:panelGrid>
+            </h:form>
+        </p:layoutUnit>
+
+        <p:layoutUnit position="center">
+            <h:form id="tablePersonForm">
+
+                <p:dataTable id="tablePersons"
+                             var="person"
+                             value="#{personBean.lazyDataModel}"
+                             lazy="true"
+                             selection="#{personBean.personSelected}"
+                             paginator="true"
+                             rows="10"
+                             emptyMessage="--vacio--"
+                             rowKey="#{person.personId}"
+                             sortBy="#{person.firstName}"
+                             selectionMode="single"
+                             rowIndexVar="index"
+                             tableStyleClass="ui-table-columntoggle">
+
+                    <p:ajax event="rowSelect" listener="#{personBean.onRowSelect}" update=":personForm" />
+                    <p:ajax event="rowUnselect" listener="#{personBean.onRowUnselect}" update=":personForm" />
+
+                    <p:column headerText="#" width="10">
+                        <h:outputText value="#{index + 1}"/>
+                    </p:column>
+
+                    <p:column headerText="Nombre" width="auto" sortBy="#{person.firstName}" filterBy="#{person.firstName}">
+                        <h:outputText value="#{person.firstName}" />
+                    </p:column>
+
+                    <p:column headerText="Apellido" width="auto" sortBy="#{person.lastName}" filterBy="#{person.lastName}">
+                        <h:outputText value="#{person.lastName}" />
+                    </p:column>
+
+                    <p:column headerText="Iglesia" width="auto">
+                        <h:outputText value="#{person.localChurchDTO.name}" />
+                    </p:column>
+
+                    <p:column headerText="N°" width="100" sortBy="#{person.controlNumber}" filterBy="#{person.controlNumber}">
+                        <h:outputText value="#{person.controlNumber}" />
+                    </p:column>
+
+                </p:dataTable>
+            </h:form>
+        </p:layoutUnit>
+    </p:layout>
+
+</h:body>
+</html>

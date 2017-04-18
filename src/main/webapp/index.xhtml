@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://java.sun.com/jsf/html" xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:c="http://java.sun.com/jsp/jstl/core">
+
+<h:head>
+    <title>Inicio</title>
+    <h:outputStylesheet>
+        body {
+            background: url("sources/background.jpg") no-repeat center center fixed;
+            -webkit-background-size: cover;
+            -moz-background-size: cover;
+            -o-background-size: cover;
+            background-size: cover;
+        }
+
+        h1 {
+            color: #c9d0d4;
+            font-family: 'Helvetica Neue', sans-serif;
+            font-size: 46px;
+            font-weight: 100;
+            line-height: 50px;
+            letter-spacing: 1px;
+            padding: 0 0 40px;
+            border-bottom: double #555;
+            text-align: center;
+        }
+    </h:outputStylesheet>
+
+</h:head>
+<h:body>
+    <f:event type="preRenderView" listener="#{userBean.check}" />
+    <h1>
+        ESTUDIO BIBLICO ORURO-VINTO
+    </h1>
+    <h:form>
+        <p:commandButton value="Logout" action="#{userBean.logout}" ajax="false" />
+    </h:form>
+    <p:tabMenu activeIndex="0">
+        <p:menuitem value="Registro"  icon="ui-icon-person" outcome="registro.xhtml" target="_blanck">
+        </p:menuitem>
+        <p:menuitem value="Eventos" outcome="eventos.xhtml" icon="ui-icon-star" target="_blanck">
+        </p:menuitem>
+
+        <p:menuitem value="Congregaciones" outcome="congregaciones.xhtml" icon="ui-icon-arrowrefresh-1-w" target="_blanck">
+        </p:menuitem>
+
+    </p:tabMenu>
+</h:body>
+</html>

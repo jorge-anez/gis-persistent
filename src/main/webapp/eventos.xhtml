@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://java.sun.com/jsf/html" xmlns:p="http://primefaces.org/ui">
+
+<h:head>
+    <title>Calendario de Actividades</title>
+    <style type="text/css">
+        .ui-button-text {
+            padding: 3px !important;
+        }
+    </style>
+</h:head>
+<h:body>
+    <f:event type="preRenderView" listener="#{userBean.check}" />
+    <h:form>
+        <p:growl id="messages" showDetail="true" />
+        <h:panelGrid columnClasses="value">
+            <h3 style="margin-top: 0">Calendario Estudio</h3>
+            <h:form>
+                <p:commandButton value="Logout" action="#{userBean.logout}" ajax="false" />
+            </h:form>
+            <p:schedule id="schedule" value="#{scheduleView.lazyEventModel}" widgetVar="myschedule" timeZone="GMT-4" locale="es" slotMinutes="15" tooltip="true" view="agendaWeek" allDaySlot = "false">
+                <p:ajax event="dateSelect" listener="#{scheduleView.onDateSelect}" update="eventDetails" oncomplete="PF('eventDialog').show();" />
+                <p:ajax event="eventSelect" listener="#{scheduleView.onEventSelect}" update="eventDetails" oncomplete="PF('eventDialog').show();" />
+                <p:ajax event="eventMove" listener="#{scheduleView.onEventMove}" update="messages"/>
+                <p:ajax event="eventResize" listener="#{scheduleView.onEventResize}" update="messages" />
+            </p:schedule>
+        </h:panelGrid>
+
+        <p:dialog widgetVar="eventDialog" header="Detalles Evento" showEffect="clip" hideEffect="clip">
+            <h:panelGrid id="eventDetails" columns="2">
+                <p:outputLabel for="title" value="Titulo:" />
+                <p:inputText id="title" value="#{scheduleView.event.title}" required="true" />
+
+                <p:outputLabel for="desc" value="Desc.:" />
+                <p:inputText id="desc" value="#{scheduleView.event.description}"/>
+
+                <p:outputLabel for="place" value="Lugar:" />
+                <p:inputText id="place" value="#{scheduleView.event.place}"/>
+
+                <p:outputLabel for="subject" value="Tema:" />
+                <p:inputText id="subject" value="#{scheduleView.event.subject}"/>
+
+                <p:outputLabel for="from" value="Inicio:" />
+                <p:calendar id="from" value="#{scheduleView.event.startDate}" timeZone="GMT-4" pattern="dd/MM/yyy HH:mm" locale="es" />
+
+                <p:outputLabel for="to" value="Fin:" />
+                <p:calendar id="to" value="#{scheduleView.event.endDate}" timeZone="GMT-4" pattern="dd/MM/yyy HH:mm" locale="es" />
+
+                <f:facet name="footer">
+                    <p:commandButton id="addButton" value="Guardar" actionListener="#{scheduleView.addEvent}" oncomplete="PF('myschedule').update();PF('eventDialog').hide();" />
+                    <p:commandButton id="goAttendanceBtn" value="Participantes" action="#{scheduleView.goAttendanca}" ajax="false"/>
+                    <p:commandButton id="removeBtn" value="Eliminar" actionListener="#{scheduleView.removeEvent}" oncomplete="PF('myschedule').update();PF('eventDialog').hide();" />
+                </f:facet>
+            </h:panelGrid>
+        </p:dialog>
+    </h:form>
+
+    <script type="text/javascript">
+        PrimeFaces.locales['es'] = {
+            closeText: 'Cerrar',
+            prevText: 'Atras',
+            nextText: 'Adelante',
+            currentText: 'Hoy',
+            monthNames: ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'],
+            monthNamesShort: ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'],
+            dayNames: ['Domingo','Lunes','Martes','Miercoles','Jueves','Viernes','Sabado'],
+            dayNamesShort: ['Dom','Lun','Mar','Mier','Juv','Vie','Sab'],
+            dayNamesMin: ['D','L','Mr','M','J','V','S'],
+            weekHeader: 'Hf',
+            firstDay: 7,
+            isRTL: false,
+            showMonthAfterYear: false,
+            yearSuffix: '',
+            month: 'Mes',
+            week: 'Semana',
+            day: 'Dia',
+            allDayText : 'Todo el Dia'
+        };
+    </script>
+    <style type="text/css">
+        .value {
+            width: 1000px;
+        }
+    </style>
+</h:body>
+</html>

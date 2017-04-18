@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://java.sun.com/jsf/html" xmlns:p="http://primefaces.org/ui">
+
+<h:head>
+    <title>Registro Asistentes</title>
+    <meta http-equiv="cache-control" content="max-age=0" />
+    <meta http-equiv="cache-control" content="no-cache" />
+    <meta http-equiv="expires" content="0" />
+    <meta http-equiv="pragma" content="no-cache" />
+    <h:outputStylesheet>
+        #titleText {
+            color: #7c795d; font-family: 'arial', serif; font-size: 45px; font-weight: normal; line-height: 48px; margin: 0;
+            text-align: center;
+        }
+    </h:outputStylesheet>
+</h:head>
+<h:body>
+    <f:event type="preRenderView" listener="#{userBean.check}" />
+    <p:layout fullPage="true">
+        <p:layoutUnit position="north">
+            <h1 id = "titleText">
+                ESTUDIO BIBLICO ORURO-VINTO
+            </h1>
+            <h:form>
+                <p:commandButton value="Logout" action="#{userBean.logout}" ajax="false" />
+            </h:form>
+            <h:panelGrid columns="4">
+                <p:outputLabel value="Titulo:" style="font-weight: bold; font-size: 20px; margin-right: 20px;"/>
+                <p:outputLabel value="#{attendanceBean.event.title}"/>
+                <p:outputLabel value="Descripcion:" style="font-weight: bold; font-size: 20px; margin-right: 20px; margin-left: 30px;"/>
+                <p:outputLabel value="#{attendanceBean.event.description}"/>
+
+                <p:outputLabel value="Inicio:" style="font-weight: bold; font-size: 20px;"/>
+                <h:outputText value="#{attendanceBean.event.startDate}">
+                        <f:convertDateTime pattern="dd/MM/yyyy   HH:mm" timeZone="GMT-4" />
+                </h:outputText>
+                <p:outputLabel value="Fin:" style="font-weight: bold; font-size: 20px; margin-right: 20px; margin-left: 30px;"/>
+                <h:outputText value="#{attendanceBean.event.endDate}">
+                    <f:convertDateTime pattern="dd/MM/yyyy    HH:mm" timeZone="GMT-4" />
+                </h:outputText>
+            </h:panelGrid>
+
+        </p:layoutUnit>
+        <p:layoutUnit position="west">
+            <h:form id="attendanceForm">
+                <p:growl id="growl" showDetail="true" life="1500" />
+                <p:panelGrid id="grid" columns="2" style="margin-bottom:10px">
+                    <p:outputLabel value="N° Control:" for="numberControl" />
+                    <p:inputText id="numberControl" value="#{attendanceBean.controlNumber}" required="true" requiredMessage="Ingrese N° de control"/>
+                    <p:outputLabel value="Observaciones:" for="notes" />
+                    <p:inputText id="notes" value="#{attendanceBean.notes}"/>
+                    <f:facet name="header">
+                        <p:outputLabel value="Registro Asistencia"/>
+                    </f:facet>
+                    <f:facet name="footer">
+                        <p:commandButton value="Registrar" id="btnRegistrar" process="@all" update=":attendanceForm, :tableAttendanceForm" actionListener="#{attendanceBean.saveAttendance}" />
+                    </f:facet>
+                </p:panelGrid>
+            </h:form>
+        </p:layoutUnit>
+        <p:layoutUnit position="center">
+            <h:form id="tableAttendanceForm">
+                <p:dataTable id="tableAttenders"
+                             var="attender"
+                             value="#{attendanceBean.attendanceDTOs}"
+                             emptyMessage="--vacio--"
+                             rowIndexVar="index"
+                             tableStyleClass="ui-table-columntoggle">
+
+                    <p:column headerText="#" width="10">
+                        <h:outputText value="#{index + 1}"/>
+                    </p:column>
+
+                    <p:column headerText="Nombre" width="auto">
+                        <h:outputText value="#{attender.person.firstName}" />
+                    </p:column>
+
+                    <p:column headerText="Apellido" width="auto">
+                        <h:outputText value="#{attender.person.lastName}" />
+                    </p:column>
+
+                    <p:column headerText="N° Control" width="100">
+                        <h:outputText value="#{attender.person.controlNumber}" />
+                    </p:column>
+
+                    <p:column headerText="Hora" width="75">
+                        <h:outputText value="#{attender.inTime}">
+                            <f:convertDateTime pattern="HH:mm" timeZone="GMT-4" />
+                        </h:outputText>
+                    </p:column>
+
+                    <p:column headerText="Obs.">
+                        <h:outputText value="#{attender.notes}" />
+                    </p:column>
+
+                </p:dataTable>
+            </h:form>
+        </p:layoutUnit>
+    </p:layout>
+
+</h:body>
+</html>
