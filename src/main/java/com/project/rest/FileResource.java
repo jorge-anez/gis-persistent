@@ -9,23 +9,26 @@ import org.apache.commons.io.FilenameUtils;
 import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFinder;
 import org.geotools.data.FeatureSource;
+import org.geotools.data.memory.MemoryFeatureCollection;
 import org.geotools.data.shapefile.dbf.DbaseFileReader;
 
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
+import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.geotools.geojson.feature.FeatureJSON;
+import org.geotools.referencing.crs.DefaultGeographicCRS;
+import org.json.simple.parser.JSONParser;
 import org.opengis.feature.Property;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.filter.Filter;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.util.*;
 
@@ -73,6 +76,34 @@ public class FileResource {
 
     }
 
+    public FeatureIterator<SimpleFeature> readJSON(InputStreamReader reader) throws Exception{
+            System.out.println("INTO PARSINGJSON");
+            JSONParser parser = new JSONParser();
+            Object obj = parser.parse(reader);
+            FeatureJSON fJSON = new FeatureJSON();
+            FeatureCollection fc = fJSON.readFeatureCollection(obj.toString());
+            FeatureIterator<SimpleFeature> features = fc.features();
+
+        Collection<SimpleFeature> featureCollection = new MemoryFeatureCollection(createFeatureType());
+        return features;
+    }
+
+    private static SimpleFeatureType createFeatureType() {
+
+        SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
+        builder.setName("Location");
+        builder.setCRS(DefaultGeographicCRS.WGS84); // <- Coordinate reference system
+
+        // add attributes in order
+        builder.add("the_geom", Geometry.class);
+        builder.length(15).add("Name", String.class); // <- 15 chars width for name field
+        // build the type
+        final SimpleFeatureType LOCATION = builder.buildFeatureType();
+
+        return LOCATION;
+    }
+
+
     public FeatureIterator<SimpleFeature> readSHP(String p) throws Exception {
         File file = new File(p);
         Map<String, Object> map = new HashMap<String, Object>();
@@ -82,6 +113,11 @@ public class FileResource {
 
         FeatureSource<SimpleFeatureType, SimpleFeature> source = dataStore.getFeatureSource(typeName);
         Filter filter = Filter.INCLUDE; // ECQL.toFilter("BBOX(THE_GEOM, 10,20,30,40)")
+
+        SimpleFeatureType schema = source.getSchema();
+        CoordinateReferenceSystem sourceCRS = schema.getCoordinateReferenceSystem();
+        System.out.println(sourceCRS.toString());
+
 
         FeatureCollection<SimpleFeatureType, SimpleFeature> collection = source.getFeatures(filter);
         FeatureIterator<SimpleFeature> features = collection.features();
