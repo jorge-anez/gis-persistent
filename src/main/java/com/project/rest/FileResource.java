@@ -1,13 +1,19 @@
 package com.project.rest;
 
 import com.project.services.EventService;
+import com.project.services.SpatialDataService;
 import com.project.utils.FileProcesor;
+import com.project.utils.SpacialFileUtils;
+import com.vividsolutions.jts.geom.Geometry;
 import org.apache.commons.io.FilenameUtils;
 import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFinder;
 import org.geotools.data.FeatureSource;
+import org.geotools.data.shapefile.dbf.DbaseFileReader;
+
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
+import org.opengis.feature.Property;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.filter.Filter;
@@ -18,10 +24,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.*;
 
 /**
  * Created by user on 4/18/2017.
@@ -31,6 +37,9 @@ import java.util.Map;
 public class FileResource {
     @Autowired
     EventService eventService;
+
+    @Autowired
+    SpatialDataService spatialDataService;
 
     @Value("${dir.upload.cache}")
     private String dirTemp;
@@ -47,7 +56,13 @@ public class FileResource {
                     e.transferTo(file);
                     pathFiles.add(e.getOriginalFilename());
                 }
-                FileProcesor.processShapeFile(pathFiles);
+                //FileProcesor.processShapeFile(pathFiles);
+                Map<String, String> mapFiles = SpacialFileUtils.getFileExtension(pathFiles);
+                    String path = dirTemp + mapFiles.get("dbf") +".dbf";
+                    String p = dirTemp + mapFiles.get("shp") +".shp";
+                //readDBF(path);
+                FeatureIterator<SimpleFeature> featureIterator = readSHP(p);
+                spatialDataService.persistFeatures(featureIterator);
                 return "You successfully uploaded ";
             } catch (Exception e) {
                 return "You failed to upload  => " + e.getMessage();
@@ -58,5 +73,53 @@ public class FileResource {
 
     }
 
+    public FeatureIterator<SimpleFeature> readSHP(String p) throws Exception {
+        File file = new File(p);
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("url", file.toURI().toURL());
+        DataStore dataStore = DataStoreFinder.getDataStore(map);
+        String typeName = dataStore.getTypeNames()[0];
 
+        FeatureSource<SimpleFeatureType, SimpleFeature> source = dataStore.getFeatureSource(typeName);
+        Filter filter = Filter.INCLUDE; // ECQL.toFilter("BBOX(THE_GEOM, 10,20,30,40)")
+
+        FeatureCollection<SimpleFeatureType, SimpleFeature> collection = source.getFeatures(filter);
+        FeatureIterator<SimpleFeature> features = collection.features();
+        return features;
+
+        /*
+        while (features.hasNext()) {
+            SimpleFeature feature = features.next();
+
+            for (Property e: feature.getProperties()){
+                System.out.println(e.getName() + " => " + e.getValue());
+            }
+            //System.out.println(feature.getDefaultGeometryProperty().getValue());
+        }
+        dataStore.dispose();
+        */
+    }
+// Here's an example that should work (warning, I haven't
+// tried to compile this).  The example assumes the first field has a
+// character data type and the second has a numeric data type:
+    public void readDBF(String path) throws IOException {
+
+        FileInputStream fis = new FileInputStream( path );
+        DbaseFileReader dbfReader =  new DbaseFileReader(fis.getChannel(),
+                false,  Charset.forName("ISO-8859-1"));
+
+        while ( dbfReader.hasNext() ){
+            final Object[] fields = dbfReader.readEntry();
+
+            //String field1 = (String) fields[0];
+            //Integer field2 = (Integer) fields[1];
+
+            System.out.println("DBF field : " + Arrays.toString(fields));
+            //System.out.println("DBF field 2 value is: " + field2);
+        }
+
+        dbfReader.close();
+        fis.close();
+
+    }
 }

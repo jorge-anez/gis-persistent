@@ -24,7 +24,6 @@ public class EventServiceImpl implements EventService {
     @PostConstruct
     public void init() {
         eventDAO = new GenericDAOImpl<Event, Long>(sessionFactory, Event.class);
-        System.out.println("post construct");
     }
 
     @Transactional
