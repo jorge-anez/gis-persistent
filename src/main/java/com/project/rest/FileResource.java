@@ -16,8 +16,10 @@ import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geojson.feature.FeatureJSON;
+import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.json.simple.parser.JSONParser;
+import org.opengis.feature.Feature;
 import org.opengis.feature.Property;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -114,9 +116,9 @@ public class FileResource {
         FeatureSource<SimpleFeatureType, SimpleFeature> source = dataStore.getFeatureSource(typeName);
         Filter filter = Filter.INCLUDE; // ECQL.toFilter("BBOX(THE_GEOM, 10,20,30,40)")
 
-        SimpleFeatureType schema = source.getSchema();
-        CoordinateReferenceSystem sourceCRS = schema.getCoordinateReferenceSystem();
-        System.out.println(sourceCRS.toString());
+        //SimpleFeatureType schema = source.getSchema();
+        //CoordinateReferenceSystem sourceCRS = CRS.decode("EPSG:5352");
+        //System.out.println(sourceCRS.toString());
 
 
         FeatureCollection<SimpleFeatureType, SimpleFeature> collection = source.getFeatures(filter);
@@ -158,4 +160,32 @@ public class FileResource {
         fis.close();
 
     }
+
+
+
+
+    @RequestMapping(value="/list", method= RequestMethod.GET)
+    public String list(@ModelAttribute("uploadFile") FileUploadForm files){
+        FeatureCollection  features = spatialDataService.getSpacialData();
+        System.out.println(features.size());
+
+        //JSONParser parser = new JSONParser();
+        //Object obj = parser.parse(reader);
+        FeatureJSON json = new FeatureJSON();
+
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        try {
+            json.writeFeatureCollection(features, stream);
+            String str = new String(stream.toByteArray());
+            System.out.println(str);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+        //FeatureCollection fc = fJSON.readFeatureCollection(obj.toString());
+        //FeatureIterator<SimpleFeature> features = fc.features();
+        return "hello";
+    }
+
 }

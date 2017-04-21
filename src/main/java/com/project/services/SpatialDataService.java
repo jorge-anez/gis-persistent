@@ -5,9 +5,12 @@ import org.geotools.feature.FeatureIterator;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
+import java.util.Collection;
+
 /**
  * Created by JORGE-HP on 18/4/2017.
  */
 public interface SpatialDataService {
     void persistFeatures(FeatureIterator<SimpleFeature> featureIterator);
+    FeatureCollection getSpacialData();
 }

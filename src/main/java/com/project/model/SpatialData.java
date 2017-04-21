@@ -13,6 +13,9 @@ import java.util.Collection;
  */
 @Entity
 @Table(name = "t_spacial_data")
+@NamedQueries(
+        {@NamedQuery(name="getSpatialDataAndAttribs", query="FROM SpatialData s LEFT JOIN FETCH s.spatialDataAttributes sd LEFT JOIN FETCH sd.attribute a")}
+)
 public class SpatialData {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
