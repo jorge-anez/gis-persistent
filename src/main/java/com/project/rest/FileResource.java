@@ -30,6 +30,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.util.*;
@@ -162,30 +164,28 @@ public class FileResource {
     }
 
 
-
-
     @RequestMapping(value="/list", method= RequestMethod.GET)
-    public String list(@ModelAttribute("uploadFile") FileUploadForm files){
+    public void list(HttpServletResponse response){
         FeatureCollection  features = spatialDataService.getSpacialData();
         System.out.println(features.size());
-
         //JSONParser parser = new JSONParser();
         //Object obj = parser.parse(reader);
         FeatureJSON json = new FeatureJSON();
-
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
         try {
-            json.writeFeatureCollection(features, stream);
-            String str = new String(stream.toByteArray());
-            System.out.println(str);
+            response.reset();
+            response.resetBuffer();
+            response.setContentType("application/json");
+            ServletOutputStream ouputStream = response.getOutputStream();
+            json.writeFeatureCollection(features, ouputStream);
+            ouputStream.flush();
+            ouputStream.close();
+            //String str = new String(stream.toByteArray());
+            //System.out.println(str);
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
         //FeatureCollection fc = fJSON.readFeatureCollection(obj.toString());
         //FeatureIterator<SimpleFeature> features = fc.features();
-        return "hello";
     }
 
 }
