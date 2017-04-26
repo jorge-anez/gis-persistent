@@ -1,6 +1,5 @@
 package com.project.rest;
 
-import com.project.services.EventService;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
@@ -15,8 +14,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/event")
 public class EventResource {
-    @Autowired
-    EventService eventService;
+//    @Autowired
     private WKTReader reader = new WKTReader();
 
     @RequestMapping(value = "/index", produces = MediaType.TEXT_HTML_VALUE)
@@ -30,7 +28,6 @@ public class EventResource {
         Point point = null;
         try {
             point = (Point) reader.read(format);
-            eventService.create(point);
         } catch (ParseException e) {
             e.printStackTrace();
         }

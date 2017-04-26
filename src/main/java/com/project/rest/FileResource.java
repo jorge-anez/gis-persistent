@@ -1,11 +1,10 @@
 package com.project.rest;
 
-import com.project.services.EventService;
+import com.project.model.transfer.LayerDTO;
 import com.project.services.SpatialDataService;
-import com.project.utils.FileProcesor;
+import com.project.services.SpatialLayerService;
 import com.project.utils.SpacialFileUtils;
 import com.vividsolutions.jts.geom.Geometry;
-import org.apache.commons.io.FilenameUtils;
 import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFinder;
 import org.geotools.data.FeatureSource;
@@ -19,12 +18,9 @@ import org.geotools.geojson.feature.FeatureJSON;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.json.simple.parser.JSONParser;
-import org.opengis.feature.Feature;
-import org.opengis.feature.Property;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.filter.Filter;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
@@ -42,11 +38,11 @@ import java.util.*;
 @RestController
 @RequestMapping("/file")
 public class FileResource {
-    @Autowired
-    EventService eventService;
 
     @Autowired
-    SpatialDataService spatialDataService;
+    private SpatialLayerService spatialLayerService;
+    @Autowired
+    private SpatialDataService spatialDataService;
 
     @Value("${dir.upload.cache}")
     private String dirTemp;
@@ -68,8 +64,12 @@ public class FileResource {
                     String path = dirTemp + mapFiles.get("dbf") +".dbf";
                     String p = dirTemp + mapFiles.get("shp") +".shp";
                 //readDBF(path);
-                FeatureIterator<SimpleFeature> featureIterator = readSHP(p);
-                spatialDataService.persistFeatures(featureIterator);
+                FeatureCollection<SimpleFeatureType, SimpleFeature> collection = readSHP(p);
+                //spatialDataService.persistFeatures(featureIterator);
+                LayerDTO layerDTO = new LayerDTO();
+                layerDTO.setName("Layer 1");
+                layerDTO.setEpsgCode(CRS.lookupEpsgCode(collection.getSchema().getCoordinateReferenceSystem(), true));
+                spatialLayerService.persistLayerFeatures(layerDTO, collection);
                 return "You successfully uploaded ";
             } catch (Exception e) {
                 return "You failed to upload  => " + e.getMessage();
@@ -108,7 +108,7 @@ public class FileResource {
     }
 
 
-    public FeatureIterator<SimpleFeature> readSHP(String p) throws Exception {
+    public FeatureCollection<SimpleFeatureType, SimpleFeature> readSHP(String p) throws Exception {
         File file = new File(p);
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("url", file.toURI().toURL());
@@ -118,14 +118,17 @@ public class FileResource {
         FeatureSource<SimpleFeatureType, SimpleFeature> source = dataStore.getFeatureSource(typeName);
         Filter filter = Filter.INCLUDE; // ECQL.toFilter("BBOX(THE_GEOM, 10,20,30,40)")
 
-        //SimpleFeatureType schema = source.getSchema();
+        SimpleFeatureType schema = source.getSchema();
         //CoordinateReferenceSystem sourceCRS = CRS.decode("EPSG:5352");
         //System.out.println(sourceCRS.toString());
+        Integer epsg_code = CRS.lookupEpsgCode(schema.getCoordinateReferenceSystem(), true);
+        System.out.println(epsg_code);
 
 
         FeatureCollection<SimpleFeatureType, SimpleFeature> collection = source.getFeatures(filter);
-        FeatureIterator<SimpleFeature> features = collection.features();
-        return features;
+        return collection;
+        //FeatureIterator<SimpleFeature> features = collection.features();
+        //return features;
 
         /*
         while (features.hasNext()) {
@@ -166,7 +169,8 @@ public class FileResource {
 
     @RequestMapping(value="/list", method= RequestMethod.GET)
     public void list(HttpServletResponse response){
-        FeatureCollection  features = spatialDataService.getSpacialData();
+        //FeatureCollection  features = spatialDataService.getSpacialData();
+        FeatureCollection  features = spatialLayerService.getLayerInfo(1L);
         System.out.println(features.size());
         //JSONParser parser = new JSONParser();
         //Object obj = parser.parse(reader);

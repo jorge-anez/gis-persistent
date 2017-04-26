@@ -1,11 +1,9 @@
-package com.project.model;
+package com.project.model.domain;
 
 import com.vividsolutions.jts.geom.Geometry;
-import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.util.Collection;
 
 /**
@@ -14,7 +12,10 @@ import java.util.Collection;
 @Entity
 @Table(name = "t_spacial_data")
 @NamedQueries(
-        {@NamedQuery(name="getSpatialDataAndAttribs", query="FROM SpatialData s LEFT JOIN FETCH s.spatialDataAttributes sd LEFT JOIN FETCH sd.attribute a")}
+        {
+             @NamedQuery(name="getSpatialDataAndAttribs", query="FROM SpatialData s LEFT JOIN FETCH s.spatialDataAttributes sd LEFT JOIN FETCH sd.attribute a")
+            ,@NamedQuery(name="getSpatialDataForLayer", query="FROM SpatialData s WHERE s.spatialLayer.spatialLayerId = :spatialLayerId")
+        }
 )
 public class SpatialData {
     @Id
@@ -26,8 +27,8 @@ public class SpatialData {
     private Geometry theGeom;
 
     @ManyToOne
-    @JoinColumn(name="project_id")
-    private Project project;
+    @JoinColumn(name="spatial_layer_id")
+    private SpatialLayer spatialLayer;
 
     @OneToMany(mappedBy="spatialData")
     private Collection<SpatialDataAttribute> spatialDataAttributes;
@@ -40,6 +41,14 @@ public class SpatialData {
         this.spatialDataId = spatialDataId;
     }
 
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
+    }
+
     public Geometry getTheGeom() {
         return theGeom;
     }
@@ -48,12 +57,12 @@ public class SpatialData {
         this.theGeom = theGeom;
     }
 
-    public Project getProject() {
-        return project;
+    public SpatialLayer getSpatialLayer() {
+        return spatialLayer;
     }
 
-    public void setProject(Project project) {
-        this.project = project;
+    public void setSpatialLayer(SpatialLayer spatialLayer) {
+        this.spatialLayer = spatialLayer;
     }
 
     public Collection<SpatialDataAttribute> getSpatialDataAttributes() {
@@ -62,13 +71,5 @@ public class SpatialData {
 
     public void setSpatialDataAttributes(Collection<SpatialDataAttribute> spatialDataAttributes) {
         this.spatialDataAttributes = spatialDataAttributes;
-    }
-
-    public String getSource() {
-        return source;
-    }
-
-    public void setSource(String source) {
-        this.source = source;
     }
 }

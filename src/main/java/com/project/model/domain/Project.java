@@ -1,7 +1,4 @@
-package com.project.model;
-
-import com.vividsolutions.jts.geom.Geometry;
-import org.hibernate.annotations.Type;
+package com.project.model.domain;
 
 import javax.persistence.*;
 import java.util.Collection;
@@ -17,7 +14,7 @@ public class Project {
     private Long projectId;
     private String projectName;
     @OneToMany(mappedBy="project")
-    private Collection<SpatialData> spatialData;
+    private Collection<SpatialLayer> spatialLayers;
 
     public Long getProjectId() {
         return projectId;
@@ -35,11 +32,12 @@ public class Project {
         this.projectName = projectName;
     }
 
-    public Collection<SpatialData> getSpatialData() {
-        return spatialData;
+    public Collection<SpatialLayer> getSpatialLayers() {
+        return spatialLayers;
     }
 
-    public void setSpatialData(Collection<SpatialData> spatialData) {
-        this.spatialData = spatialData;
+    public void setSpatialLayers(Collection<SpatialLayer> spatialLayers) {
+        this.spatialLayers = spatialLayers;
     }
+
 }

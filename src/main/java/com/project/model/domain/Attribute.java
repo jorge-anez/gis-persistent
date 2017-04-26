@@ -1,4 +1,4 @@
-package com.project.model;
+package com.project.model.domain;
 
 import javax.persistence.*;
 import java.util.Collection;
@@ -8,14 +8,23 @@ import java.util.Collection;
  */
 @Entity
 @Table(name = "t_attribute")
+@NamedQueries(
+        {@NamedQuery(name="getAttributesForLayer", query="FROM Attribute a WHERE a.spatialLayer.spatialLayerId = :spatialLayerId")}
+)
 public class Attribute {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long attributeId;
+
     private String attributeName;
 
     @OneToMany(mappedBy="attribute")
     private Collection<SpatialDataAttribute> spatialDataAttribute;
+
+    @ManyToOne
+    @JoinColumn(name="spatial_layer_id")
+    private SpatialLayer spatialLayer;
+
 
     public Long getAttributeId() {
         return attributeId;
@@ -39,5 +48,13 @@ public class Attribute {
 
     public void setSpatialDataAttribute(Collection<SpatialDataAttribute> spatialDataAttribute) {
         this.spatialDataAttribute = spatialDataAttribute;
+    }
+
+    public SpatialLayer getSpatialLayer() {
+        return spatialLayer;
+    }
+
+    public void setSpatialLayer(SpatialLayer spatialLayer) {
+        this.spatialLayer = spatialLayer;
     }
 }

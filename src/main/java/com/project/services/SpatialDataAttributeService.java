@@ -1,14 +1,13 @@
 package com.project.services;
 
-import com.project.model.Attribute;
-import com.project.model.SpatialData;
-import com.project.model.SpatialDataAttribute;
-import org.geotools.feature.FeatureIterator;
-import org.opengis.feature.simple.SimpleFeature;
+import com.project.model.domain.Attribute;
+import com.project.model.domain.SpatialData;
+import com.project.model.domain.SpatialDataAttribute;
+import com.project.model.transfer.AttributeDTO;
 
 /**
  * Created by JORGE-HP on 18/4/2017.
  */
 public interface SpatialDataAttributeService {
-    public SpatialDataAttribute create(String value, Attribute attributeId, SpatialData spatialData);
+    public void create(String value, AttributeDTO attributeId, SpatialData spatialData);
 }

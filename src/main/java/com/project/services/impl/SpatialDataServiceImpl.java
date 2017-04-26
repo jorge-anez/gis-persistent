@@ -1,18 +1,22 @@
-package com.project.services;
+package com.project.services.impl;
 
 import com.project.dao.GenericDAOImpl;
-import com.project.model.Attribute;
-import com.project.model.SpatialData;
-import com.project.model.SpatialDataAttribute;
+import com.project.model.domain.Attribute;
+import com.project.model.domain.SpatialData;
+import com.project.model.domain.SpatialDataAttribute;
+import com.project.model.domain.SpatialLayer;
+import com.project.services.AttributeService;
+import com.project.services.SpatialDataAttributeService;
+import com.project.services.SpatialDataService;
+import com.project.services.SpatialLayerService;
 import com.vividsolutions.jts.geom.Geometry;
-import org.geotools.data.memory.MemoryFeatureCollection;
-import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
+import org.hibernate.Query;
 import org.hibernate.SessionFactory;
 import org.opengis.feature.Property;
 import org.opengis.feature.simple.SimpleFeature;
@@ -22,7 +26,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -35,6 +38,8 @@ public class SpatialDataServiceImpl implements SpatialDataService {
     AttributeService attributeService;
     @Autowired
     SpatialDataAttributeService spatialDataAttributeService;
+    @Autowired
+    SpatialLayerService spatialLayerService;
 
     @Autowired
     private SessionFactory sessionFactory;
@@ -46,25 +51,13 @@ public class SpatialDataServiceImpl implements SpatialDataService {
     }
 
     @Transactional
-    public void persistFeatures(FeatureIterator<SimpleFeature> featureIterator) {
-        while (featureIterator.hasNext()) {
-            SimpleFeature feature = featureIterator.next();
-            SpatialData spatialData = new SpatialData();
-            spatialData.setTheGeom((Geometry)feature.getAttribute("the_geom"));
-            spatialData.setSource("shape file");
-            spatialDataDAO.save(spatialData);
-
-            for (Property e: feature.getProperties()){
-                if(e.getName().toString().equals("the_geom"))
-                    continue;
-                Attribute attribute = attributeService.findByName(e.getName().toString());
-                if(attribute == null ){
-                    attribute = attributeService.create(e.getName().toString());
-                }
-                spatialDataAttributeService.create(e.getValue().toString(), attribute, spatialData);
-            }
-        }
+    public void persistFeatures(SpatialData spatialData, Long layerId) {
+        SpatialLayer spatialLayer = new SpatialLayer();
+        spatialLayer.setSpatialLayerId(layerId);
+        spatialData.setSpatialLayer(spatialLayer);
+        spatialDataDAO.save(spatialData);
     }
+
     @Transactional
     public FeatureCollection getSpacialData() {
         List<SpatialData> spatialDataList = spatialDataDAO.getNamedQuery("getSpatialDataAndAttribs").list();
@@ -84,6 +77,13 @@ public class SpatialDataServiceImpl implements SpatialDataService {
             builder.reset();
         }
         return featureCollection;
+    }
+
+    public List<SpatialData> getSpatialDatasByLayer(Long layerId) {
+        Query query = spatialDataDAO.getNamedQuery("getSpatialDataForLayer");
+        query.setParameter("spatialLayerId", layerId);
+        List<SpatialData> spatialDatas = query.list();
+        return spatialDatas;
     }
 
     private SimpleFeatureType createFeatureType(Collection<SpatialDataAttribute> dataAttributes) {

@@ -1,21 +1,17 @@
-package com.project.services;
+package com.project.services.impl;
 
 import com.project.dao.GenericDAOImpl;
-import com.project.model.Attribute;
-import com.project.model.SpatialData;
-import com.project.model.SpatialDataAttribute;
-import com.vividsolutions.jts.geom.Geometry;
-import org.geotools.feature.FeatureIterator;
+import com.project.model.domain.Attribute;
+import com.project.model.domain.SpatialData;
+import com.project.model.domain.SpatialDataAttribute;
+import com.project.model.transfer.AttributeDTO;
+import com.project.services.SpatialDataAttributeService;
 import org.hibernate.SessionFactory;
-import org.opengis.feature.Property;
-import org.opengis.feature.simple.SimpleFeature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.Collection;
 
 /**
  * Created by JORGE-HP on 18/4/2017.
@@ -32,12 +28,13 @@ public class SpatialDataAttributeServiceImpl implements SpatialDataAttributeServ
     }
 
     @Transactional
-    public SpatialDataAttribute create(String value, Attribute attribute, SpatialData spatialData) {
+    public void create(String value, AttributeDTO attributeDTO, SpatialData spatialData) {
         SpatialDataAttribute dataAttribute = new SpatialDataAttribute();
+        Attribute attribute = new Attribute();
+        attribute.setAttributeId(attributeDTO.getAttributeId());
         dataAttribute.setValue(value);
         dataAttribute.setAttribute(attribute);
         dataAttribute.setSpatialData(spatialData);
         spatialDataAttributeDAO.save(dataAttribute);
-        return null;
     }
 }
