@@ -21,6 +21,8 @@ import org.json.simple.parser.JSONParser;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.filter.Filter;
+import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
@@ -166,15 +168,13 @@ public class FileResource {
 
     }
 
-
     @RequestMapping(value="/list", method= RequestMethod.GET)
     public void list(HttpServletResponse response){
-        //FeatureCollection  features = spatialDataService.getSpacialData();
-        FeatureCollection  features = spatialLayerService.getLayerInfo(1L);
-        System.out.println(features.size());
+        FeatureCollection<SimpleFeatureType, SimpleFeature>  features = spatialLayerService.getLayerInfo(1L);
         //JSONParser parser = new JSONParser();
         //Object obj = parser.parse(reader);
         FeatureJSON json = new FeatureJSON();
+        //json.setEncodeFeatureCRS(true);
         try {
             response.reset();
             response.resetBuffer();
@@ -192,4 +192,24 @@ public class FileResource {
         //FeatureIterator<SimpleFeature> features = fc.features();
     }
 
+    @RequestMapping(value="/projection", method= RequestMethod.GET)
+    public void getProjection(HttpServletResponse response){
+        FeatureJSON json = new FeatureJSON();
+        LayerDTO layerDTO = spatialLayerService.getLayerById(1L);
+        try {
+            response.reset();
+            response.resetBuffer();
+            response.setContentType("application/json");
+            ServletOutputStream ouputStream = response.getOutputStream();
+            json.writeCRS(CRS.decode("EPSG:"+layerDTO.getEpsgCode()), ouputStream);
+            ouputStream.flush();
+            ouputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (NoSuchAuthorityCodeException e) {
+            e.printStackTrace();
+        } catch (FactoryException e) {
+            e.printStackTrace();
+        }
+    }
 }

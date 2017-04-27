@@ -16,5 +16,5 @@ public interface SpatialLayerService {
     void createSpatialLayer(LayerDTO layerDTO);
     List<LayerDTO> list();
     void persistLayerFeatures(LayerDTO layerDTO, FeatureCollection<SimpleFeatureType, SimpleFeature> collection);
-    FeatureCollection getLayerInfo(Long layerId);
+    FeatureCollection<SimpleFeatureType, SimpleFeature> getLayerInfo(Long layerId);
 }

@@ -10,10 +10,10 @@ import java.util.Collection;
  * Created by JORGE-HP on 18/4/2017.
  */
 @Entity
-@Table(name = "t_spacial_data")
+@Table(name = "t_spatial_data")
 @NamedQueries(
         {
-             @NamedQuery(name="getSpatialDataAndAttribs", query="FROM SpatialData s LEFT JOIN FETCH s.spatialDataAttributes sd LEFT JOIN FETCH sd.attribute a")
+             @NamedQuery(name="getSpatialDataAndAttribs", query="FROM SpatialData s LEFT JOIN FETCH s.spatialDataAttributes sd LEFT JOIN FETCH sd.attribute a WHERE s.spatialLayer.spatialLayerId = :layerId")
             ,@NamedQuery(name="getSpatialDataForLayer", query="FROM SpatialData s WHERE s.spatialLayer.spatialLayerId = :spatialLayerId")
         }
 )

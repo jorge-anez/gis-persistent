@@ -7,7 +7,7 @@ import java.util.Collection;
  * Created by JORGE-HP on 18/4/2017.
  */
 @Entity
-@Table(name = "t_spacial_layer")
+@Table(name = "t_spatial_layer")
 @NamedQueries(
         {@NamedQuery(name="spatialQuery", query="FROM SpatialData s LEFT JOIN FETCH s.spatialDataAttributes sd LEFT JOIN FETCH sd.attribute a")}
 )

@@ -60,28 +60,13 @@ public class SpatialDataServiceImpl implements SpatialDataService {
 
     @Transactional
     public FeatureCollection getSpacialData() {
-        List<SpatialData> spatialDataList = spatialDataDAO.getNamedQuery("getSpatialDataAndAttribs").list();
-        SimpleFeatureType featureType = createFeatureType(spatialDataList.get(0).getSpatialDataAttributes());
 
-        DefaultFeatureCollection featureCollection = new DefaultFeatureCollection("internal", featureType);
-        //Collection<SimpleFeature> featureCollection = new MemoryFeatureCollection(featureType);
-
-        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
-        for (SpatialData e: spatialDataList) {
-            for (SpatialDataAttribute a: e.getSpatialDataAttributes()) {
-                builder.set(a.getAttribute().getAttributeName(), a.getValue());
-            }
-            builder.set("the_geom", e.getTheGeom());
-            SimpleFeature feature = builder.buildFeature("fid." + e.getSpatialDataId());
-            featureCollection.add(feature);
-            builder.reset();
-        }
-        return featureCollection;
+        return null;
     }
 
     public List<SpatialData> getSpatialDatasByLayer(Long layerId) {
-        Query query = spatialDataDAO.getNamedQuery("getSpatialDataForLayer");
-        query.setParameter("spatialLayerId", layerId);
+        Query query = spatialDataDAO.getNamedQuery("getSpatialDataAndAttribs");
+        query.setParameter("layerId", layerId);
         List<SpatialData> spatialDatas = query.list();
         return spatialDatas;
     }

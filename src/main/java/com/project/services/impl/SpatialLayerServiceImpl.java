@@ -19,12 +19,15 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
+import org.geotools.referencing.factory.AbstractAuthorityFactory;
 import org.hibernate.SessionFactory;
 import org.opengis.feature.Property;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.crs.GeographicCRS;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -111,7 +114,7 @@ public class SpatialLayerServiceImpl implements SpatialLayerService {
     }
 
     @Transactional
-    public FeatureCollection getLayerInfo(Long layerId) {
+    public FeatureCollection<SimpleFeatureType, SimpleFeature> getLayerInfo(Long layerId) {
         LayerDTO layerDTO = getLayerById(layerId);
         List<AttributeDTO> dtos = attributeService.getLayerAttribs(layerId);
         SimpleFeatureType featureType = null;
@@ -120,40 +123,28 @@ public class SpatialLayerServiceImpl implements SpatialLayerService {
         } catch (FactoryException e) {
             e.printStackTrace();
         }
-
         DefaultFeatureCollection featureCollection = new DefaultFeatureCollection("internal", featureType);
-
-        //List<SpatialData> spatialDataList = null;
         List<SpatialData> spatialDataList = spatialDataService.getSpatialDatasByLayer(layerId);
-        //Collection<SimpleFeature> featureCollection = new MemoryFeatureCollection(featureType);
-
-
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
         for (SpatialData e: spatialDataList) {
-            /*
+            builder.set("the_geom", e.getTheGeom());
             for (SpatialDataAttribute a: e.getSpatialDataAttributes()) {
                 builder.set(a.getAttribute().getAttributeName(), a.getValue());
             }
-            */
-            builder.set("the_geom", e.getTheGeom());
-            SimpleFeature feature = builder.buildFeature("fid." + e.getSpatialDataId());
+            SimpleFeature feature = builder.buildFeature(String.valueOf(e.getSpatialDataId()));
             featureCollection.add(feature);
             builder.reset();
         }
         return featureCollection;
     }
 
-
-
     private SimpleFeatureType createFeatureType(List<AttributeDTO> dtos, Integer epsgCode) throws FactoryException {
         SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
         builder.setName("Location");
-        builder.setCRS(CRS.decode("EPSG:"+epsgCode)); // <- Coordinate reference system
-        // add attributes in order
+        builder.setCRS(CRS.decode("EPSG:"+epsgCode));
         builder.add("the_geom", Geometry.class);
         for (AttributeDTO e: dtos)
             builder.add(e.getAttributeName(), String.class);
-        // build the type
         final SimpleFeatureType featureType = builder.buildFeatureType();
         return featureType;
     }
