@@ -82,6 +82,36 @@ public class FileResource {
 
     }
 
+
+    @RequestMapping(value="/temp/upload", method= RequestMethod.POST)
+    public void tempUpload(@ModelAttribute("uploadFile") FileUploadForm files, HttpServletResponse response){
+        List<String> pathFiles = new ArrayList<String>();
+        if (!files.getFiles().isEmpty()) {
+            try {
+                File file;
+                for (MultipartFile e: files.getFiles()) {
+                    file = new File(dirTemp + e.getOriginalFilename());
+                    e.transferTo(file);
+                    pathFiles.add(e.getOriginalFilename());
+                }
+                Map<String, String> mapFiles = SpacialFileUtils.getFileExtension(pathFiles);
+                String p = dirTemp + mapFiles.get("shp") + ".shp";
+                FeatureCollection<SimpleFeatureType, SimpleFeature> collection = readSHP(p);
+                FeatureJSON json = new FeatureJSON();
+                json.setEncodeFeatureCRS(true);
+                response.reset();
+                response.resetBuffer();
+                response.setContentType("application/json");
+                ServletOutputStream ouputStream = response.getOutputStream();
+                json.writeFeatureCollection(collection, ouputStream);
+                ouputStream.flush();
+                ouputStream.close();
+            } catch (Exception e) {
+
+            }
+        }
+    }
+
     public FeatureIterator<SimpleFeature> readJSON(InputStreamReader reader) throws Exception{
             System.out.println("INTO PARSINGJSON");
             JSONParser parser = new JSONParser();
@@ -116,34 +146,14 @@ public class FileResource {
         map.put("url", file.toURI().toURL());
         DataStore dataStore = DataStoreFinder.getDataStore(map);
         String typeName = dataStore.getTypeNames()[0];
-
         FeatureSource<SimpleFeatureType, SimpleFeature> source = dataStore.getFeatureSource(typeName);
         Filter filter = Filter.INCLUDE; // ECQL.toFilter("BBOX(THE_GEOM, 10,20,30,40)")
-
         SimpleFeatureType schema = source.getSchema();
-        //CoordinateReferenceSystem sourceCRS = CRS.decode("EPSG:5352");
-        //System.out.println(sourceCRS.toString());
-        Integer epsg_code = CRS.lookupEpsgCode(schema.getCoordinateReferenceSystem(), true);
-        System.out.println(epsg_code);
-
-
         FeatureCollection<SimpleFeatureType, SimpleFeature> collection = source.getFeatures(filter);
-        return collection;
-        //FeatureIterator<SimpleFeature> features = collection.features();
-        //return features;
-
-        /*
-        while (features.hasNext()) {
-            SimpleFeature feature = features.next();
-
-            for (Property e: feature.getProperties()){
-                System.out.println(e.getName() + " => " + e.getValue());
-            }
-            //System.out.println(feature.getDefaultGeometryProperty().getValue());
-        }
         dataStore.dispose();
-        */
+        return collection;
     }
+
 // Here's an example that should work (warning, I haven't
 // tried to compile this).  The example assumes the first field has a
 // character data type and the second has a numeric data type:
