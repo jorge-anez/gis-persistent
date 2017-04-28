@@ -12,6 +12,7 @@ import com.project.services.SpatialDataAttributeService;
 import com.project.services.SpatialDataService;
 import com.project.services.SpatialLayerService;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.Polygon;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
@@ -123,7 +124,7 @@ public class SpatialLayerServiceImpl implements SpatialLayerService {
         } catch (FactoryException e) {
             e.printStackTrace();
         }
-        DefaultFeatureCollection featureCollection = new DefaultFeatureCollection("internal", featureType);
+        DefaultFeatureCollection featureCollection = new DefaultFeatureCollection(null, featureType);
         List<SpatialData> spatialDataList = spatialDataService.getSpatialDatasByLayer(layerId);
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
         for (SpatialData e: spatialDataList) {
@@ -132,6 +133,8 @@ public class SpatialLayerServiceImpl implements SpatialLayerService {
                 builder.set(a.getAttribute().getAttributeName(), a.getValue());
             }
             SimpleFeature feature = builder.buildFeature(String.valueOf(e.getSpatialDataId()));
+            System.out.println(feature.getDefaultGeometry().getClass());
+
             featureCollection.add(feature);
             builder.reset();
         }
@@ -142,7 +145,7 @@ public class SpatialLayerServiceImpl implements SpatialLayerService {
         SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
         builder.setName("Location");
         builder.setCRS(CRS.decode("EPSG:"+epsgCode));
-        builder.add("the_geom", Geometry.class);
+        builder.add("the_geom", Polygon.class);
         for (AttributeDTO e: dtos)
             builder.add(e.getAttributeName(), String.class);
         final SimpleFeatureType featureType = builder.buildFeatureType();
