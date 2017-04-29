@@ -65,7 +65,7 @@ public class SpatialLayerServiceImpl implements SpatialLayerService {
         if(spatialLayer == null) return null;
         LayerDTO layerDTO= new LayerDTO();
         layerDTO.setEpsgCode(spatialLayer.getEpsgCode());
-        layerDTO.setName(spatialLayer.getLayerName());
+        layerDTO.setLayerName(spatialLayer.getLayerName());
         layerDTO.setLayerId(spatialLayer.getSpatialLayerId());
         return layerDTO;
     }
@@ -73,11 +73,28 @@ public class SpatialLayerServiceImpl implements SpatialLayerService {
     @Transactional
     public void createSpatialLayer(LayerDTO layerDTO) {
         SpatialLayer spatialLayer = new SpatialLayer();
-        spatialLayer.setSpatialLayerId(layerDTO.getLayerId());
         spatialLayer.setEpsgCode(layerDTO.getEpsgCode());
-        spatialLayer.setLayerName(layerDTO.getName());
+        spatialLayer.setLayerName(layerDTO.getLayerName());
         spatialLayerDAO.save(spatialLayer);
         layerDTO.setLayerId(spatialLayer.getSpatialLayerId());
+    }
+
+    @Transactional
+    public void updateSpatialLayer(LayerDTO layerDTO) {
+        SpatialLayer spatialLayer = new SpatialLayer();
+        spatialLayer.setSpatialLayerId(layerDTO.getLayerId());
+        spatialLayer.setEpsgCode(layerDTO.getEpsgCode());
+        spatialLayer.setLayerName(layerDTO.getLayerName());
+        spatialLayerDAO.update(spatialLayer);
+    }
+
+    @Transactional
+    public void deleteSpatialLayer(LayerDTO layerDTO) {
+        SpatialLayer spatialLayer = new SpatialLayer();
+        spatialLayer.setSpatialLayerId(layerDTO.getLayerId());
+        spatialLayer.setEpsgCode(layerDTO.getEpsgCode());
+        spatialLayer.setLayerName(layerDTO.getLayerName());
+        spatialLayerDAO.remove(spatialLayer);
     }
 
     @Transactional
@@ -87,7 +104,7 @@ public class SpatialLayerServiceImpl implements SpatialLayerService {
         for(SpatialLayer e: layers) {
             LayerDTO layerDTO = new LayerDTO();
             layerDTO.setLayerId(e.getSpatialLayerId());
-            layerDTO.setName(e.getLayerName());
+            layerDTO.setLayerName(e.getLayerName());
             layerDTO.setEpsgCode(e.getEpsgCode());
             result.add(layerDTO);
         }

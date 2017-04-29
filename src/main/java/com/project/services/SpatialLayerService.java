@@ -14,6 +14,8 @@ import java.util.List;
 public interface SpatialLayerService {
     LayerDTO getLayerById(Long layerId);
     void createSpatialLayer(LayerDTO layerDTO);
+    void updateSpatialLayer(LayerDTO layerDTO);
+    void deleteSpatialLayer(LayerDTO layerDTO);
     List<LayerDTO> list();
     void persistLayerFeatures(LayerDTO layerDTO, FeatureCollection<SimpleFeatureType, SimpleFeature> collection);
     FeatureCollection<SimpleFeatureType, SimpleFeature> getLayerInfo(Long layerId);

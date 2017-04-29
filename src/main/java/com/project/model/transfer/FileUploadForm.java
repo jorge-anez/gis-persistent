@@ -1,4 +1,4 @@
-package com.project.rest;
+package com.project.model.transfer;
 
 import org.springframework.web.multipart.MultipartFile;
 

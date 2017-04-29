@@ -1,5 +1,6 @@
 package com.project.rest;
 
+import com.project.model.transfer.FileUploadForm;
 import com.project.model.transfer.LayerDTO;
 import com.project.services.SpatialDataService;
 import com.project.services.SpatialLayerService;
@@ -69,7 +70,7 @@ public class FileResource {
                 FeatureCollection<SimpleFeatureType, SimpleFeature> collection = readSHP(p);
                 //spatialDataService.persistFeatures(featureIterator);
                 LayerDTO layerDTO = new LayerDTO();
-                layerDTO.setName("Layer 1");
+                layerDTO.setLayerName("Layer 1");
                 layerDTO.setEpsgCode(CRS.lookupEpsgCode(collection.getSchema().getCoordinateReferenceSystem(), true));
                 spatialLayerService.persistLayerFeatures(layerDTO, collection);
                 return "You successfully uploaded ";
