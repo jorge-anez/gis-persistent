@@ -64,11 +64,18 @@ public class SpatialDataServiceImpl implements SpatialDataService {
         return null;
     }
 
+    @Transactional
     public List<SpatialData> getSpatialDatasByLayer(Long layerId) {
         Query query = spatialDataDAO.getNamedQuery("getSpatialDataAndAttribs");
         query.setParameter("layerId", layerId);
         List<SpatialData> spatialDatas = query.list();
         return spatialDatas;
+    }
+
+    @Transactional
+    public void deleteSpatialDataForLayer(Long layerId) {
+        String sql = String.format("DELETE FROM t_spatial_data WHERE spatial_layer_id = %d", layerId);
+        sessionFactory.getCurrentSession().createSQLQuery(sql).executeUpdate();
     }
 
     private SimpleFeatureType createFeatureType(Collection<SpatialDataAttribute> dataAttributes) {

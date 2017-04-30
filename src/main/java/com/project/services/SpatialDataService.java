@@ -16,4 +16,5 @@ public interface SpatialDataService {
     void persistFeatures(SpatialData spatialData, Long layerId);
     FeatureCollection getSpacialData();
     List<SpatialData> getSpatialDatasByLayer(Long layerId);
+    void deleteSpatialDataForLayer(Long layerId);
 }

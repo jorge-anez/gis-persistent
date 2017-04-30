@@ -11,8 +11,7 @@ import com.project.services.AttributeService;
 import com.project.services.SpatialDataAttributeService;
 import com.project.services.SpatialDataService;
 import com.project.services.SpatialLayerService;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.geom.*;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
@@ -34,15 +33,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by JORGE-HP on 25/4/2017.
  */
 @Service
 public class SpatialLayerServiceImpl implements SpatialLayerService {
+    private static Map<String, Class> SUPPORT_GEOMETRIES = new HashMap<String, Class>();
     @Autowired
     private AttributeService attributeService;
     @Autowired
@@ -57,6 +55,12 @@ public class SpatialLayerServiceImpl implements SpatialLayerService {
     @PostConstruct
     public void init() {
         spatialLayerDAO = new GenericDAOImpl<SpatialLayer, Long>(sessionFactory, SpatialLayer.class);
+        SUPPORT_GEOMETRIES.put("LineString", LineString.class);
+        SUPPORT_GEOMETRIES.put("MultiLineString", MultiLineString.class);
+        SUPPORT_GEOMETRIES.put("Polygon", Polygon.class);
+        SUPPORT_GEOMETRIES.put("MultiPolygon", MultiPolygon.class);
+        SUPPORT_GEOMETRIES.put("Point", Point.class);
+        SUPPORT_GEOMETRIES.put("MultiPoint", MultiPoint.class);
     }
 
     @Transactional
@@ -120,6 +124,7 @@ public class SpatialLayerServiceImpl implements SpatialLayerService {
         else {
             spatialDataAttributeService.deleteAttributesValuesForLayer(layerDTO.getLayerId());
             attributeService.deleteAttributesForLayer(layerDTO.getLayerId());
+            spatialDataService.deleteSpatialDataForLayer(layerDTO.getLayerId());
         }
 
         List<AttributeDTO> attributes = getAttributes(collection.getSchema().getAttributeDescriptors());
@@ -147,43 +152,32 @@ public class SpatialLayerServiceImpl implements SpatialLayerService {
     }
 
     @Transactional
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> getLayerInfo(Long layerId) {
+    public FeatureCollection<SimpleFeatureType, SimpleFeature> getLayerInfo(Long layerId) throws Exception {
         LayerDTO layerDTO = getLayerById(layerId);
         List<AttributeDTO> dtos = attributeService.getLayerAttribs(layerId);
-        SimpleFeatureType featureType = null;
-        try {
-            featureType = createFeatureType(dtos, layerDTO.getEpsgCode());
-        } catch (FactoryException e) {
-            e.printStackTrace();
-        }
-
-        DefaultFeatureCollection featureCollection = new DefaultFeatureCollection(null, featureType);
+        Map<String, SimpleFeatureType> featureTypes = new HashMap<String, SimpleFeatureType>();
+            featureTypes.put("LineString", createFeatureType(dtos, SUPPORT_GEOMETRIES.get("LineString"), layerDTO.getEpsgCode()));
+            featureTypes.put("MultiLineString", createFeatureType(dtos, SUPPORT_GEOMETRIES.get("MultiLineString"), layerDTO.getEpsgCode()));
+            featureTypes.put("Polygon", createFeatureType(dtos, SUPPORT_GEOMETRIES.get("Polygon"), layerDTO.getEpsgCode()));
+            featureTypes.put("MultiPolygon", createFeatureType(dtos, SUPPORT_GEOMETRIES.get("MultiPolygon"), layerDTO.getEpsgCode()));
+            featureTypes.put("Point", createFeatureType(dtos, SUPPORT_GEOMETRIES.get("Point"), layerDTO.getEpsgCode()));
+            featureTypes.put("MultiPoint", createFeatureType(dtos, SUPPORT_GEOMETRIES.get("MultiPoint"), layerDTO.getEpsgCode()));
+        DefaultFeatureCollection featureCollection = new DefaultFeatureCollection();
         List<SpatialData> spatialDataList = spatialDataService.getSpatialDatasByLayer(layerId);
-        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
+        SimpleFeatureBuilder builder;
         for (SpatialData e: spatialDataList) {
+            builder = new SimpleFeatureBuilder(featureTypes.get(e.getGeometryType()));
             builder.set("geometry", e.getTheGeom());
             for (SpatialDataAttribute a: e.getSpatialDataAttributes()) {
                 builder.set(a.getAttribute().getAttributeName(), a.getValue());
             }
             SimpleFeature feature = builder.buildFeature(String.valueOf(e.getSpatialDataId()));
-            System.out.println(feature.getDefaultGeometry().getClass());
-
             featureCollection.add(feature);
             builder.reset();
         }
         return featureCollection;
     }
 
-    private SimpleFeatureType createFeatureType(List<AttributeDTO> dtos, Integer epsgCode) throws FactoryException {
-        SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
-        builder.setName("Location");
-        builder.setCRS(CRS.decode("EPSG:" + epsgCode));
-        builder.add("geometry", Polygon.class);
-        for (AttributeDTO e: dtos)
-            builder.add(e.getAttributeName(), String.class);
-        final SimpleFeatureType featureType = builder.buildFeatureType();
-        return featureType;
-    }
 
     private List<AttributeDTO> getAttributes(List<AttributeDescriptor> descriptors) {
         List<AttributeDTO> list = new ArrayList<AttributeDTO>(descriptors.size());
@@ -195,5 +189,15 @@ public class SpatialLayerServiceImpl implements SpatialLayerService {
             list.add(dto);
         }
         return list;
+    }
+    private SimpleFeatureType createFeatureType(List<AttributeDTO> dtos, Class geometryType, Integer epsgCode) throws FactoryException {
+        SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
+        builder.setName("Location");
+        builder.setCRS(CRS.decode("EPSG:" + epsgCode));
+        builder.add("geometry", geometryType);
+        for (AttributeDTO e: dtos)
+            builder.add(e.getAttributeName(), String.class);
+        final SimpleFeatureType featureType = builder.buildFeatureType();
+        return featureType;
     }
 }

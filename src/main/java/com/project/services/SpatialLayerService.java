@@ -19,5 +19,5 @@ public interface SpatialLayerService {
     List<LayerDTO> list();
     void createLayerFeatures(LayerDTO layerDTO, FeatureCollection<SimpleFeatureType, SimpleFeature> collection);
     void updateLayerFeatures(LayerDTO layerDTO, FeatureCollection<SimpleFeatureType, SimpleFeature> collection);
-    FeatureCollection<SimpleFeatureType, SimpleFeature> getLayerInfo(Long layerId);
+    FeatureCollection<SimpleFeatureType, SimpleFeature> getLayerInfo(Long layerId) throws Exception;
 }

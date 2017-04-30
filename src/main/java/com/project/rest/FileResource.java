@@ -181,7 +181,7 @@ public class FileResource {
 
     @RequestMapping(value="/list", method= RequestMethod.GET)
     public void list(HttpServletResponse response){
-        FeatureCollection<SimpleFeatureType, SimpleFeature>  features = spatialLayerService.getLayerInfo(1L);
+        //FeatureCollection<SimpleFeatureType, SimpleFeature>  features = spatialLayerService.getLayerInfo(1L);
         //JSONParser parser = new JSONParser();
         //Object obj = parser.parse(reader);
         FeatureJSON json = new FeatureJSON();
@@ -191,7 +191,7 @@ public class FileResource {
             response.resetBuffer();
             response.setContentType("application/json");
             ServletOutputStream ouputStream = response.getOutputStream();
-            json.writeFeatureCollection(features, ouputStream);
+            //json.writeFeatureCollection(features, ouputStream);
             ouputStream.flush();
             ouputStream.close();
             //String str = new String(stream.toByteArray());

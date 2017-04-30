@@ -3,43 +3,22 @@ package com.project.rest;
 import com.project.model.transfer.BaseResponse;
 import com.project.model.transfer.DataResponse;
 import com.project.model.transfer.LayerDTO;
-import com.project.services.SpatialDataService;
 import com.project.services.SpatialLayerService;
-import com.project.utils.SpacialFileUtils;
-import com.vividsolutions.jts.geom.Geometry;
-import org.geotools.data.DataStore;
-import org.geotools.data.DataStoreFinder;
-import org.geotools.data.FeatureSource;
-import org.geotools.data.memory.MemoryFeatureCollection;
-import org.geotools.data.shapefile.dbf.DbaseFileReader;
 import org.geotools.feature.FeatureCollection;
-import org.geotools.feature.FeatureIterator;
-import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geojson.feature.FeatureJSON;
-import org.geotools.geojson.feature.FeatureCollectionHandler;
 import org.geotools.referencing.CRS;
-import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.filter.Filter;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import org.wololo.jts2geojson.GeoJSONReader;
-import org.wololo.jts2geojson.GeoJSONWriter;
-
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
-import java.nio.charset.Charset;
-import java.util.*;
 
 /**
  * Created by JORGE-HP on 29/4/2017.
@@ -51,12 +30,12 @@ public class SpatialLayerResource {
     private SpatialLayerService spatialLayerService;
 
     //list all geometries of a layer
-    @RequestMapping(value="/listGeometries", method= RequestMethod.GET)
-    public void list(@RequestParam("layerId") Long layerId, HttpServletResponse response){
-        FeatureCollection<SimpleFeatureType, SimpleFeature>  features = spatialLayerService.getLayerInfo(layerId);
-        FeatureJSON geojson = new FeatureJSON();
-        geojson.setEncodeFeatureCollectionCRS(true);
+    @RequestMapping(value="/{layerId}/listGeometries", method= RequestMethod.GET)
+    public void list(@PathVariable("layerId") Long layerId, HttpServletResponse response){
         try {
+            FeatureCollection<SimpleFeatureType, SimpleFeature>  features = spatialLayerService.getLayerInfo(layerId);
+            FeatureJSON geojson = new FeatureJSON();
+            geojson.setEncodeFeatureCollectionCRS(true);
             response.reset();
             response.resetBuffer();
             response.setContentType("application/json");
@@ -64,8 +43,16 @@ public class SpatialLayerResource {
             geojson.writeFeatureCollection(features, ouputStream);
             ouputStream.flush();
             ouputStream.close();
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
+            String sms = "{\"success\": false}";
+            try {
+                response.getOutputStream().write(sms.getBytes());
+                response.getOutputStream().flush();
+                response.getOutputStream().close();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
         }
     }
 
@@ -145,12 +132,12 @@ public class SpatialLayerResource {
 
     @RequestMapping(value="/listAll", method= RequestMethod.GET)
     public void listAllLayers(HttpServletResponse response){
-        FeatureCollection<SimpleFeatureType, SimpleFeature>  features = spatialLayerService.getLayerInfo(1L);
-        //JSONParser parser = new JSONParser();
-        //Object obj = parser.parse(reader);
-        FeatureJSON json = new FeatureJSON();
-        json.setEncodeFeatureCRS(true);
         try {
+            FeatureCollection<SimpleFeatureType, SimpleFeature>  features = spatialLayerService.getLayerInfo(1L);
+            //JSONParser parser = new JSONParser();
+            //Object obj = parser.parse(reader);
+            FeatureJSON json = new FeatureJSON();
+            json.setEncodeFeatureCRS(true);
             response.reset();
             response.resetBuffer();
             response.setContentType("application/json");
@@ -158,7 +145,7 @@ public class SpatialLayerResource {
             json.writeFeatureCollection(features, ouputStream);
             ouputStream.flush();
             ouputStream.close();
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
