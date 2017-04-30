@@ -12,5 +12,6 @@ import java.util.List;
 public interface AttributeService {
     void create(AttributeDTO attributeDTO, Long spatialLayerId);
     Attribute findByName(String name);
+    void deleteAttributesForLayer(Long layerId);
     List<AttributeDTO> getLayerAttribs(Long layerId);
 }

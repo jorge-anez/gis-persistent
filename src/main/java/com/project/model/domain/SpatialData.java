@@ -25,7 +25,7 @@ public class SpatialData {
 
     @Type(type = "org.hibernate.spatial.GeometryType")
     private Geometry theGeom;
-
+    private String geometryType;
     @ManyToOne
     @JoinColumn(name="spatial_layer_id")
     private SpatialLayer spatialLayer;
@@ -71,5 +71,13 @@ public class SpatialData {
 
     public void setSpatialDataAttributes(Collection<SpatialDataAttribute> spatialDataAttributes) {
         this.spatialDataAttributes = spatialDataAttributes;
+    }
+
+    public String getGeometryType() {
+        return geometryType;
+    }
+
+    public void setGeometryType(String geometryType) {
+        this.geometryType = geometryType;
     }
 }

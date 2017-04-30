@@ -112,8 +112,16 @@ public class SpatialLayerServiceImpl implements SpatialLayerService {
     }
 
     @Transactional
-    public void persistLayerFeatures(LayerDTO layerDTO, FeatureCollection<SimpleFeatureType, SimpleFeature> collection) {
-        createSpatialLayer(layerDTO);
+    public void createLayerFeatures(LayerDTO layerDTO, FeatureCollection<SimpleFeatureType, SimpleFeature> collection) {
+        SpatialLayer spatialLayer = spatialLayerDAO.find(layerDTO.getLayerId());
+        if(spatialLayer == null) {
+            createSpatialLayer(layerDTO);
+        }
+        else {
+            spatialDataAttributeService.deleteAttributesValuesForLayer(layerDTO.getLayerId());
+            attributeService.deleteAttributesForLayer(layerDTO.getLayerId());
+        }
+
         List<AttributeDTO> attributes = getAttributes(collection.getSchema().getAttributeDescriptors());
         for (AttributeDTO e: attributes) {
            attributeService.create(e, layerDTO.getLayerId());
@@ -122,13 +130,20 @@ public class SpatialLayerServiceImpl implements SpatialLayerService {
         while (featureIterator.hasNext()) {
             SimpleFeature feature = featureIterator.next();
             SpatialData spatialData = new SpatialData();
-            spatialData.setTheGeom((Geometry)feature.getAttribute("the_geom"));
-            spatialData.setSource("shape file");
+            Geometry geometry = (Geometry)feature.getDefaultGeometry();
+            spatialData.setTheGeom(geometry);
+            spatialData.setSource("geoJson");
+            spatialData.setGeometryType(geometry.getGeometryType());
             spatialDataService.persistFeatures(spatialData, layerDTO.getLayerId());
             for (AttributeDTO e: attributes) {
                 spatialDataAttributeService.create(feature.getAttribute(e.getAttributeName()).toString(), e, spatialData);
             }
         }
+    }
+
+    @Transactional
+    public void updateLayerFeatures(LayerDTO layerDTO, FeatureCollection<SimpleFeatureType, SimpleFeature> collection) {
+        //TODO
     }
 
     @Transactional
@@ -141,11 +156,12 @@ public class SpatialLayerServiceImpl implements SpatialLayerService {
         } catch (FactoryException e) {
             e.printStackTrace();
         }
+
         DefaultFeatureCollection featureCollection = new DefaultFeatureCollection(null, featureType);
         List<SpatialData> spatialDataList = spatialDataService.getSpatialDatasByLayer(layerId);
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
         for (SpatialData e: spatialDataList) {
-            builder.set("the_geom", e.getTheGeom());
+            builder.set("geometry", e.getTheGeom());
             for (SpatialDataAttribute a: e.getSpatialDataAttributes()) {
                 builder.set(a.getAttribute().getAttributeName(), a.getValue());
             }
@@ -161,8 +177,8 @@ public class SpatialLayerServiceImpl implements SpatialLayerService {
     private SimpleFeatureType createFeatureType(List<AttributeDTO> dtos, Integer epsgCode) throws FactoryException {
         SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
         builder.setName("Location");
-        builder.setCRS(CRS.decode("EPSG:"+epsgCode));
-        builder.add("the_geom", Polygon.class);
+        builder.setCRS(CRS.decode("EPSG:" + epsgCode));
+        builder.add("geometry", Polygon.class);
         for (AttributeDTO e: dtos)
             builder.add(e.getAttributeName(), String.class);
         final SimpleFeatureType featureType = builder.buildFeatureType();
@@ -172,7 +188,7 @@ public class SpatialLayerServiceImpl implements SpatialLayerService {
     private List<AttributeDTO> getAttributes(List<AttributeDescriptor> descriptors) {
         List<AttributeDTO> list = new ArrayList<AttributeDTO>(descriptors.size());
         for (AttributeDescriptor e: descriptors) {
-            if("the_geom".equals(e.getName().toString())) continue;
+            if("geometry".equals(e.getName().toString())) continue;
             AttributeDTO dto = new AttributeDTO();
             dto.setAttributeName(e.getName().toString());
             dto.setClassType(e.getType().getBinding().getName());

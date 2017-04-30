@@ -72,7 +72,7 @@ public class FileResource {
                 LayerDTO layerDTO = new LayerDTO();
                 layerDTO.setLayerName("Layer 1");
                 layerDTO.setEpsgCode(CRS.lookupEpsgCode(collection.getSchema().getCoordinateReferenceSystem(), true));
-                spatialLayerService.persistLayerFeatures(layerDTO, collection);
+                spatialLayerService.createLayerFeatures(layerDTO, collection);
                 return "You successfully uploaded ";
             } catch (Exception e) {
                 return "You failed to upload  => " + e.getMessage();
@@ -99,7 +99,7 @@ public class FileResource {
                 String p = dirTemp + mapFiles.get("shp") + ".shp";
                 FeatureCollection<SimpleFeatureType, SimpleFeature> collection = readSHP(p);
                 FeatureJSON json = new FeatureJSON();
-                json.setEncodeFeatureCRS(true);
+                json.setEncodeFeatureCollectionCRS(true);
                 response.reset();
                 response.resetBuffer();
                 response.setContentType("application/json");

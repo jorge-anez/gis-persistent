@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
+import java.util.List;
 
 /**
  * Created by JORGE-HP on 18/4/2017.
@@ -36,5 +37,10 @@ public class SpatialDataAttributeServiceImpl implements SpatialDataAttributeServ
         dataAttribute.setAttribute(attribute);
         dataAttribute.setSpatialData(spatialData);
         spatialDataAttributeDAO.save(dataAttribute);
+    }
+
+    public void deleteAttributesValuesForLayer(Long layerId) {
+        String sql = String.format("DELETE FROM t_spatial_data_attribute WHERE spatial_data_id IN (SELECT spatial_data_id FROM t_spatial_data WHERE spatial_layer_id = %d)", layerId);
+        sessionFactory.getCurrentSession().createSQLQuery(sql).executeUpdate();
     }
 }

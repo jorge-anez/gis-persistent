@@ -48,6 +48,11 @@ public class AttributeServiceImpl implements AttributeService {
         return  attribute;
     }
 
+    public void deleteAttributesForLayer(Long layerId) {
+        String sql = String.format("DELETE FROM t_attribute WHERE spatial_layer_id = %d", layerId);
+        sessionFactory.getCurrentSession().createSQLQuery(sql).executeUpdate();
+    }
+
     @Transactional
     public List<AttributeDTO> getLayerAttribs(Long layerId) {
         Query query = attributeDAO.getNamedQuery("getAttributesForLayer");

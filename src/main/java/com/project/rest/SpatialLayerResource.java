@@ -72,22 +72,32 @@ public class SpatialLayerResource {
 
     //save all geometries of a layer
     @RequestMapping(value="/{layerId}/saveGeometries", method= RequestMethod.POST)
-    public String saveGeometriesLayer(@PathVariable("layerId") Long layerId, HttpServletRequest request){
+    public BaseResponse saveGeometriesLayer(@PathVariable("layerId") Long layerId, HttpServletRequest request){
+        BaseResponse response = new BaseResponse();
         try {
             JSONParser parser = new JSONParser();
             JSONObject obj =(JSONObject) parser.parse(new InputStreamReader(request.getInputStream()));
             FeatureJSON fJSON = new FeatureJSON();
             fJSON.setEncodeFeatureCollectionCRS(true);
+            fJSON.setEncodeFeatureCRS(true);
             fJSON.setEncodeNullValues(true);
             FeatureCollection<SimpleFeatureType, SimpleFeature> features = fJSON.readFeatureCollection(obj.toJSONString());
             LayerDTO layerDTO = new LayerDTO();
             layerDTO.setLayerId(layerId);
-            spatialLayerService.persistLayerFeatures(layerDTO, features);
-        } catch (IOException e) {
+            spatialLayerService.createLayerFeatures(layerDTO, features);
+        } catch (Exception e) {
             e.printStackTrace();
-        } catch (ParseException e) {
-            e.printStackTrace();
+            response.setSuccess(Boolean.FALSE);
+            response.setErrorCode(4);
+            response.setErrorMessage("Not able to save geometries");
         }
+        return response;
+    }
+
+    //update all geometries of a layer
+    @RequestMapping(value="/{layerId}/updateGeometries", method= RequestMethod.POST)
+    public String upadteGeometriesLayer(@PathVariable("layerId") Long layerId, HttpServletRequest request){
+        //TODO
         return "yes";
     }
 
