@@ -15,6 +15,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -31,7 +32,7 @@ public class SpatialLayerResource {
     @Autowired
     private SpatialLayerService spatialLayerService;
 
-    @RequestMapping(value="/index", method= RequestMethod.GET)
+    @RequestMapping(value="/index", method= RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_VALUE})
     public DataResponse index() {
         BaseResponse response = new BaseResponse();
         LayerDTO layerDTO = new LayerDTO();
@@ -72,7 +73,7 @@ public class SpatialLayerResource {
 
 
     //save all geometries of a layer
-    @RequestMapping(value="/{layerId}/saveGeometries", method= RequestMethod.POST)
+    @RequestMapping(value="/{layerId}/saveGeometries", method= RequestMethod.POST, produces = {MediaType.APPLICATION_JSON_VALUE})
     public BaseResponse saveGeometriesLayer(@PathVariable("layerId") Long layerId, HttpServletRequest request){
         BaseResponse response = new BaseResponse();
         try {
@@ -103,7 +104,7 @@ public class SpatialLayerResource {
     }
 
     //save layer
-    @RequestMapping(value="/save", method= RequestMethod.POST)
+    @RequestMapping(value="/save", method= RequestMethod.POST, produces = {MediaType.APPLICATION_JSON_VALUE})
     public DataResponse saveLayer(@RequestBody LayerDTO layerDTO) {
         DataResponse dataResponse  = new DataResponse();
         try{
@@ -118,7 +119,7 @@ public class SpatialLayerResource {
         return dataResponse;
     }
 
-    @RequestMapping(value="/update", method= RequestMethod.POST)
+    @RequestMapping(value="/update", method= RequestMethod.POST, produces = {MediaType.APPLICATION_JSON_VALUE})
     public BaseResponse updateLayer(@RequestBody LayerDTO layerDTO) {
         BaseResponse response = new BaseResponse();
         try{
@@ -144,7 +145,7 @@ public class SpatialLayerResource {
         return response;
     }
 
-    @RequestMapping(value="/{projectId}/listAll", method= RequestMethod.GET)
+    @RequestMapping(value="/{projectId}/listAll", method= RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_VALUE})
     public ListResponse listAll(@PathVariable Long projectId){
         ListResponse<LayerDTO> response = new ListResponse<LayerDTO>();
         try {
@@ -160,7 +161,7 @@ public class SpatialLayerResource {
         return response;
     }
 
-    @RequestMapping(value="/projection", method= RequestMethod.GET)
+    @RequestMapping(value="/projection", method= RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_VALUE})
     public void getProjection(HttpServletResponse response){
         FeatureJSON json = new FeatureJSON();
         LayerDTO layerDTO = spatialLayerService.getLayerById(1L);

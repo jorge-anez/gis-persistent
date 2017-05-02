@@ -1,0 +1,30 @@
+APIS
+
+list all layer
+METHOD: GET
+url: rest/layer/{projectId}/listAll
+
+list geometries for layer
+METHOD: GET
+url: rest/layer/{layerId}/listGeometries
+
+save geometries for layer
+METHOD: POST
+url: rest/layer/{layerId}/saveGeometries
+payload {geoJSON}
+
+save layer
+METHOD: POST
+url: rest/layer/{layerId}/save
+payload {"layerId":1, "layerName": "layer 1": "epsgCode":4326}
+
+save layer
+METHOD: POST
+url: rest/layer/{layerId}/update
+payload {"layerId":1, "layerName": "layer 1": "epsgCode":4326}
+
+save layer
+METHOD: POST
+url: rest/layer/{layerId}/delete
+payload {"layerId":1, "layerName": "layer 1": "epsgCode":4326}
+
