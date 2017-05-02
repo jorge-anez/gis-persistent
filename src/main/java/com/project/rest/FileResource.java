@@ -6,12 +6,15 @@ import com.project.services.SpatialDataService;
 import com.project.services.SpatialLayerService;
 import com.project.utils.SpacialFileUtils;
 import com.vividsolutions.jts.geom.Geometry;
-import org.geotools.data.DataStore;
-import org.geotools.data.DataStoreFinder;
-import org.geotools.data.FeatureSource;
+import org.apache.commons.io.IOUtils;
+import org.geotools.data.*;
 import org.geotools.data.memory.MemoryFeatureCollection;
+import org.geotools.data.shapefile.ShapefileDataStore;
+import org.geotools.data.shapefile.ShapefileDataStoreFactory;
 import org.geotools.data.shapefile.dbf.DbaseFileReader;
 
+import org.geotools.data.simple.SimpleFeatureSource;
+import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
@@ -34,6 +37,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * Created by user on 4/18/2017.
@@ -203,6 +208,27 @@ public class FileResource {
         //FeatureIterator<SimpleFeature> features = fc.features();
     }
 
+    @RequestMapping(value="/download", method= RequestMethod.GET)
+    public void downloadAsSHP(HttpServletResponse response){
+        try {
+            LayerDTO layerDTO = spatialLayerService.getLayerById(1L);
+            FeatureCollection<SimpleFeatureType, SimpleFeature>  features = spatialLayerService.getLayerInfo(1L);
+            writeSHP(features, dirTemp, layerDTO.getLayerName());
+            zipFile(dirTemp, layerDTO.getLayerName(), Arrays.asList("shp", "dbf", "shx", "prj"));
+            response.reset();
+            response.resetBuffer();
+            response.setContentType("application/zip");
+            ServletOutputStream ouputStream = response.getOutputStream();
+            InputStream inputStream = new FileInputStream(dirTemp + "/" + layerDTO.getLayerName() + ".zip");
+            IOUtils.copy(inputStream, ouputStream);
+            ouputStream.flush();
+            ouputStream.close();
+            inputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     @RequestMapping(value="/projection", method= RequestMethod.GET)
     public void getProjection(HttpServletResponse response){
         FeatureJSON json = new FeatureJSON();
@@ -221,6 +247,65 @@ public class FileResource {
             e.printStackTrace();
         } catch (FactoryException e) {
             e.printStackTrace();
+        }
+    }
+
+    public void writeSHP(FeatureCollection<SimpleFeatureType, SimpleFeature> collection, String dir, String fileName) throws Exception{
+        String saveFilepath = String.format("%s/%s.shp", dir, fileName);
+        File theFile = new File(saveFilepath);
+        ShapefileDataStoreFactory dataStoreFactory = new ShapefileDataStoreFactory();
+        Map<String, Serializable> params = new HashMap<String, Serializable>();
+        params.put("url", theFile.toURI().toURL());
+        params.put("create spatial index", Boolean.TRUE);
+        ShapefileDataStore newDataStore = (ShapefileDataStore) dataStoreFactory.createNewDataStore(params);
+        newDataStore.createSchema(collection.getSchema());
+        String typeName = newDataStore.getTypeNames()[0];
+        SimpleFeatureSource featureSource = newDataStore.getFeatureSource(typeName);
+        try {
+            if(!SimpleFeatureStore.class.isInstance(featureSource)) {
+                throw new Exception(typeName + " does not support read/write access");
+            } else {
+                SimpleFeatureStore featureStore = (SimpleFeatureStore) featureSource;
+                Transaction transaction = new DefaultTransaction("create");
+                featureStore.setTransaction(transaction);
+                try {
+                    featureStore.addFeatures(collection);
+                    transaction.commit();
+                    transaction.close();
+                } catch(Exception e) {
+                    transaction.rollback();
+                    transaction.close();
+                    throw e;
+                }
+            }
+        } catch(Exception e) {
+            throw e;
+        } finally {
+            newDataStore.dispose();
+        }
+    }
+
+    void zipFile(String dir, String fileName, List<String> exts) {
+        byte[] buffer = new byte[1024];
+        try{
+            File file = new File(dir + "/" + fileName + ".zip");
+            file.createNewFile();
+            FileOutputStream fos = new FileOutputStream(file);
+            ZipOutputStream zos = new ZipOutputStream(fos);
+            for(String ext: exts) {
+                ZipEntry ze= new ZipEntry(fileName + "." + ext);
+                zos.putNextEntry(ze);
+                FileInputStream in = new FileInputStream(dir + "/" + fileName + "." + ext);
+                int len;
+                while ((len = in.read(buffer)) > 0) {
+                    zos.write(buffer, 0, len);
+                }
+                in.close();
+            }
+            zos.finish(); // good practice
+            zos.close();
+        }catch(IOException ex){
+            ex.printStackTrace();
         }
     }
 }
