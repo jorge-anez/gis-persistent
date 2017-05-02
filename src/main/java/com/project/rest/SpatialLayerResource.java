@@ -3,6 +3,7 @@ package com.project.rest;
 import com.project.model.transfer.BaseResponse;
 import com.project.model.transfer.DataResponse;
 import com.project.model.transfer.LayerDTO;
+import com.project.model.transfer.ListResponse;
 import com.project.services.SpatialLayerService;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.geojson.feature.FeatureJSON;
@@ -19,6 +20,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.util.List;
 
 /**
  * Created by JORGE-HP on 29/4/2017.
@@ -29,9 +31,21 @@ public class SpatialLayerResource {
     @Autowired
     private SpatialLayerService spatialLayerService;
 
+    @RequestMapping(value="/index", method= RequestMethod.GET)
+    public DataResponse index() {
+        BaseResponse response = new BaseResponse();
+        LayerDTO layerDTO = new LayerDTO();
+        layerDTO.setLayerId(222L);
+        layerDTO.setLayerName("hllala");
+        layerDTO.setEpsgCode(433);
+        DataResponse<LayerDTO> sms = new DataResponse<LayerDTO>();
+        sms.setData(layerDTO);
+        //sms.setData("un mensaje");
+        return sms;
+    }
     //list all geometries of a layer
     @RequestMapping(value="/{layerId}/listGeometries", method= RequestMethod.GET)
-    public void list(@PathVariable("layerId") Long layerId, HttpServletResponse response){
+    public void listGeometries(@PathVariable("layerId") Long layerId, HttpServletResponse response){
         try {
             FeatureCollection<SimpleFeatureType, SimpleFeature>  features = spatialLayerService.getLayerInfo(layerId);
             FeatureJSON geojson = new FeatureJSON();
@@ -90,8 +104,8 @@ public class SpatialLayerResource {
 
     //save layer
     @RequestMapping(value="/save", method= RequestMethod.POST)
-    public DataResponse<LayerDTO> saveLayer(@RequestBody LayerDTO layerDTO) {
-        DataResponse<LayerDTO> dataResponse  = new DataResponse<LayerDTO>();
+    public DataResponse saveLayer(@RequestBody LayerDTO layerDTO) {
+        DataResponse dataResponse  = new DataResponse();
         try{
             spatialLayerService.createSpatialLayer(layerDTO);
             dataResponse.setData(layerDTO);
@@ -130,24 +144,20 @@ public class SpatialLayerResource {
         return response;
     }
 
-    @RequestMapping(value="/listAll", method= RequestMethod.GET)
-    public void listAllLayers(HttpServletResponse response){
+    @RequestMapping(value="/{projectId}/listAll", method= RequestMethod.GET)
+    public ListResponse listAll(@PathVariable Long projectId){
+        ListResponse<LayerDTO> response = new ListResponse<LayerDTO>();
         try {
-            FeatureCollection<SimpleFeatureType, SimpleFeature>  features = spatialLayerService.getLayerInfo(1L);
-            //JSONParser parser = new JSONParser();
-            //Object obj = parser.parse(reader);
-            FeatureJSON json = new FeatureJSON();
-            json.setEncodeFeatureCRS(true);
-            response.reset();
-            response.resetBuffer();
-            response.setContentType("application/json");
-            ServletOutputStream ouputStream = response.getOutputStream();
-            json.writeFeatureCollection(features, ouputStream);
-            ouputStream.flush();
-            ouputStream.close();
+            List<LayerDTO> list = spatialLayerService.list(projectId);
+            response.setList(list);
         } catch (Exception e) {
             e.printStackTrace();
+            response.setSuccess(Boolean.FALSE);
+            response.setErrorCode(90);
+            response.setList(null);
+            response.setErrorMessage("Not able to list");
         }
+        return response;
     }
 
     @RequestMapping(value="/projection", method= RequestMethod.GET)

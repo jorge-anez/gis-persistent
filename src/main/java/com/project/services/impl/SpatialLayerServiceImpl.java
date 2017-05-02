@@ -20,7 +20,11 @@ import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.geotools.referencing.factory.AbstractAuthorityFactory;
+import org.hibernate.Criteria;
+import org.hibernate.Query;
 import org.hibernate.SessionFactory;
+import org.hibernate.criterion.Criterion;
+import org.hibernate.criterion.Restrictions;
 import org.opengis.feature.Property;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -102,9 +106,11 @@ public class SpatialLayerServiceImpl implements SpatialLayerService {
     }
 
     @Transactional
-    public List<LayerDTO> list() {
+    public List<LayerDTO> list(Long projectId) {
+        Query query = spatialLayerDAO.getNamedQuery("listLayerForProject");
+        query.setParameter("projectId", projectId);
+        List<SpatialLayer> layers = query.list();
         List<LayerDTO> result = new ArrayList<LayerDTO>();
-        List<SpatialLayer> layers = spatialLayerDAO.findAll();
         for(SpatialLayer e: layers) {
             LayerDTO layerDTO = new LayerDTO();
             layerDTO.setLayerId(e.getSpatialLayerId());

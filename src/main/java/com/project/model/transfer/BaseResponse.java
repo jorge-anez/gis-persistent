@@ -1,17 +1,16 @@
 package com.project.model.transfer;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.*;
 
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.*;
+import java.io.Serializable;
 
 /**
  * Created by JORGE-HP on 29/4/2017.
  */
-@XmlRootElement
+@XmlRootElement(name="response")
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class BaseResponse {
+public class BaseResponse{
     private Boolean success;
     private Integer errorCode;
     private String errorMessage;

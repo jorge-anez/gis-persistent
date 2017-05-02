@@ -9,7 +9,9 @@ import java.util.Collection;
 @Entity
 @Table(name = "t_spatial_layer")
 @NamedQueries(
-        {@NamedQuery(name="spatialQuery", query="FROM SpatialData s LEFT JOIN FETCH s.spatialDataAttributes sd LEFT JOIN FETCH sd.attribute a")}
+        {@NamedQuery(name="spatialQuery", query="FROM SpatialData s LEFT JOIN FETCH s.spatialDataAttributes sd LEFT JOIN FETCH sd.attribute a")
+        ,@NamedQuery(name="listLayerForProject", query="FROM SpatialLayer s WHERE s.project.projectId = :projectId")
+        }
 )
 public class SpatialLayer {
     @Id
