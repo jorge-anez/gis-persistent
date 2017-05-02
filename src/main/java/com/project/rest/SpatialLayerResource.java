@@ -27,7 +27,7 @@ import java.util.List;
  * Created by JORGE-HP on 29/4/2017.
  */
 @RestController
-@RequestMapping("/layer")
+@RequestMapping("/project/{projectId}/layer")
 public class SpatialLayerResource {
     @Autowired
     private SpatialLayerService spatialLayerService;
@@ -41,7 +41,6 @@ public class SpatialLayerResource {
         layerDTO.setEpsgCode(433);
         DataResponse<LayerDTO> sms = new DataResponse<LayerDTO>();
         sms.setData(layerDTO);
-        //sms.setData("un mensaje");
         return sms;
     }
     //list all geometries of a layer
@@ -105,10 +104,10 @@ public class SpatialLayerResource {
 
     //save layer
     @RequestMapping(value="/save", method= RequestMethod.POST, produces = {MediaType.APPLICATION_JSON_VALUE})
-    public DataResponse saveLayer(@RequestBody LayerDTO layerDTO) {
+    public DataResponse saveLayer(@PathVariable("projectId") Long projectId, @RequestBody LayerDTO layerDTO) {
         DataResponse dataResponse  = new DataResponse();
         try{
-            spatialLayerService.createSpatialLayer(layerDTO);
+            spatialLayerService.createSpatialLayer(projectId, layerDTO);
             dataResponse.setData(layerDTO);
         }catch (Exception exp) {
             dataResponse.setData(null);
@@ -145,7 +144,7 @@ public class SpatialLayerResource {
         return response;
     }
 
-    @RequestMapping(value="/{projectId}/listAll", method= RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_VALUE})
+    @RequestMapping(value="/listAll", method= RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_VALUE})
     public ListResponse listAll(@PathVariable Long projectId){
         ListResponse<LayerDTO> response = new ListResponse<LayerDTO>();
         try {

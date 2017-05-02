@@ -13,7 +13,7 @@ import java.util.List;
  */
 public interface SpatialLayerService {
     LayerDTO getLayerById(Long layerId);
-    void createSpatialLayer(LayerDTO layerDTO);
+    void createSpatialLayer(Long projectId, LayerDTO layerDTO);
     void updateSpatialLayer(LayerDTO layerDTO);
     void deleteSpatialLayer(LayerDTO layerDTO);
     List<LayerDTO> list(Long projectId);

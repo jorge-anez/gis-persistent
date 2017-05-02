@@ -1,10 +1,7 @@
 package com.project.services.impl;
 
 import com.project.dao.GenericDAOImpl;
-import com.project.model.domain.Attribute;
-import com.project.model.domain.SpatialData;
-import com.project.model.domain.SpatialDataAttribute;
-import com.project.model.domain.SpatialLayer;
+import com.project.model.domain.*;
 import com.project.model.transfer.AttributeDTO;
 import com.project.model.transfer.LayerDTO;
 import com.project.services.AttributeService;
@@ -79,8 +76,11 @@ public class SpatialLayerServiceImpl implements SpatialLayerService {
     }
 
     @Transactional
-    public void createSpatialLayer(LayerDTO layerDTO) {
+    public void createSpatialLayer(Long projectId, LayerDTO layerDTO) {
         SpatialLayer spatialLayer = new SpatialLayer();
+        Project project = new Project();
+        project.setProjectId(projectId);
+        spatialLayer.setProject(project);
         spatialLayer.setEpsgCode(layerDTO.getEpsgCode());
         spatialLayer.setLayerName(layerDTO.getLayerName());
         spatialLayerDAO.save(spatialLayer);
@@ -125,7 +125,7 @@ public class SpatialLayerServiceImpl implements SpatialLayerService {
     public void createLayerFeatures(LayerDTO layerDTO, FeatureCollection<SimpleFeatureType, SimpleFeature> collection) {
         SpatialLayer spatialLayer = spatialLayerDAO.find(layerDTO.getLayerId());
         if(spatialLayer == null) {
-            createSpatialLayer(layerDTO);
+            createSpatialLayer(0L, layerDTO);
         }
         else {
             spatialDataAttributeService.deleteAttributesValuesForLayer(layerDTO.getLayerId());
