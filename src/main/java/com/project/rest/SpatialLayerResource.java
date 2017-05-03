@@ -1,9 +1,6 @@
 package com.project.rest;
 
-import com.project.model.transfer.BaseResponse;
-import com.project.model.transfer.DataResponse;
-import com.project.model.transfer.LayerDTO;
-import com.project.model.transfer.ListResponse;
+import com.project.model.transfer.*;
 import com.project.services.SpatialLayerService;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.geojson.feature.FeatureJSON;
@@ -172,6 +169,22 @@ public class SpatialLayerResource {
             response.setErrorCode(90);
             response.setList(null);
             response.setErrorMessage("Not able to list");
+        }
+        return response;
+    }
+
+    @RequestMapping(value="/{layerId}/listAttributes", method= RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_VALUE})
+    public ListResponse listAllAttributes(@PathVariable("layerId") Long layerId){
+        ListResponse<AttributeDTO> response = new ListResponse<AttributeDTO>();
+        try {
+            List<AttributeDTO> list = spatialLayerService.listAttributeForLayer(layerId);
+            response.setList(list);
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setSuccess(Boolean.FALSE);
+            response.setErrorCode(91);
+            response.setList(null);
+            response.setErrorMessage("Not able to list attributes");
         }
         return response;
     }

@@ -1,5 +1,6 @@
 package com.project.services;
 
+import com.project.model.transfer.AttributeDTO;
 import com.project.model.transfer.LayerDTO;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
@@ -13,6 +14,7 @@ import java.util.List;
  */
 public interface SpatialLayerService {
     LayerDTO getLayerById(Long layerId);
+    List<AttributeDTO> listAttributeForLayer(Long layerId);
     void createSpatialLayer(Long projectId, LayerDTO layerDTO);
     void updateSpatialLayer(LayerDTO layerDTO);
     void deleteSpatialLayer(LayerDTO layerDTO);

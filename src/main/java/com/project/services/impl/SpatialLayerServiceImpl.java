@@ -76,6 +76,12 @@ public class SpatialLayerServiceImpl implements SpatialLayerService {
     }
 
     @Transactional
+    public List<AttributeDTO> listAttributeForLayer(Long layerId) {
+        List<AttributeDTO> list = attributeService.getLayerAttribs(layerId);
+        return list;
+    }
+
+    @Transactional
     public void createSpatialLayer(Long projectId, LayerDTO layerDTO) {
         SpatialLayer spatialLayer = new SpatialLayer();
         if(projectId != null) {
