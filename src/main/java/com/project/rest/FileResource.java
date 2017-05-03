@@ -75,7 +75,7 @@ public class FileResource {
                 FeatureCollection<SimpleFeatureType, SimpleFeature> collection = readSHP(p);
                 //spatialDataService.persistFeatures(featureIterator);
                 LayerDTO layerDTO = new LayerDTO();
-                layerDTO.setLayerName("Layer 1");
+                layerDTO.setLayerName(mapFiles.get("shp"));
                 layerDTO.setEpsgCode(CRS.lookupEpsgCode(collection.getSchema().getCoordinateReferenceSystem(), true));
                 spatialLayerService.createLayerFeatures(layerDTO, collection);
                 return "You successfully uploaded ";

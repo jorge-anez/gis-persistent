@@ -78,9 +78,11 @@ public class SpatialLayerServiceImpl implements SpatialLayerService {
     @Transactional
     public void createSpatialLayer(Long projectId, LayerDTO layerDTO) {
         SpatialLayer spatialLayer = new SpatialLayer();
-        Project project = new Project();
-        project.setProjectId(projectId);
-        spatialLayer.setProject(project);
+        if(projectId != null) {
+            Project project = new Project();
+            project.setProjectId(projectId);
+            spatialLayer.setProject(project);
+        }
         spatialLayer.setEpsgCode(layerDTO.getEpsgCode());
         spatialLayer.setLayerName(layerDTO.getLayerName());
         spatialLayerDAO.save(spatialLayer);
@@ -106,6 +108,22 @@ public class SpatialLayerServiceImpl implements SpatialLayerService {
     }
 
     @Transactional
+    public LayerDTO getBaseLayer() {
+        Criterion criterion = Restrictions.eq("baseLayer", true);
+        List<SpatialLayer> layers = spatialLayerDAO.findByCriteria(criterion);
+        if(layers != null && layers.size() == 1) {
+            LayerDTO layerDTO = new LayerDTO();
+            SpatialLayer layer = layers.get(0);
+            layerDTO.setLayerId(layer.getSpatialLayerId());
+            layerDTO.setLayerName(layer.getLayerName());
+            layerDTO.setEpsgCode(layer.getEpsgCode());
+            return layerDTO;
+        }
+
+        return null;
+    }
+
+    @Transactional
     public List<LayerDTO> list(Long projectId) {
         Query query = spatialLayerDAO.getNamedQuery("listLayerForProject");
         query.setParameter("projectId", projectId);
@@ -125,7 +143,7 @@ public class SpatialLayerServiceImpl implements SpatialLayerService {
     public void createLayerFeatures(LayerDTO layerDTO, FeatureCollection<SimpleFeatureType, SimpleFeature> collection) {
         SpatialLayer spatialLayer = spatialLayerDAO.find(layerDTO.getLayerId());
         if(spatialLayer == null) {
-            createSpatialLayer(0L, layerDTO);
+            createSpatialLayer(null, layerDTO);
         }
         else {
             spatialDataAttributeService.deleteAttributesValuesForLayer(layerDTO.getLayerId());

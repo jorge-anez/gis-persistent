@@ -1,5 +1,7 @@
 package com.project.model.domain;
 
+import org.hibernate.annotations.Type;
+
 import javax.persistence.*;
 import java.util.Collection;
 
@@ -10,7 +12,7 @@ import java.util.Collection;
 @Table(name = "t_spatial_layer")
 @NamedQueries(
         {@NamedQuery(name="spatialQuery", query="FROM SpatialData s LEFT JOIN FETCH s.spatialDataAttributes sd LEFT JOIN FETCH sd.attribute a")
-        ,@NamedQuery(name="listLayerForProject", query="FROM SpatialLayer s WHERE s.project.projectId = :projectId")
+        ,@NamedQuery(name="listLayerForProject", query="FROM SpatialLayer s WHERE s.project.projectId = :projectId and baseLayer = false")
         }
 )
 public class SpatialLayer {
@@ -19,6 +21,8 @@ public class SpatialLayer {
     private Long spatialLayerId;
     private String layerName;
     private Integer epsgCode;
+    @Type(type="yes_no")
+    private Boolean baseLayer = Boolean.FALSE;
 
     @ManyToOne
     @JoinColumn(name="project_id")
@@ -76,5 +80,13 @@ public class SpatialLayer {
 
     public void setAttributes(Collection<Attribute> attributes) {
         this.attributes = attributes;
+    }
+
+    public Boolean getBaseLayer() {
+        return baseLayer;
+    }
+
+    public void setBaseLayer(Boolean baseLayer) {
+        this.baseLayer = baseLayer;
     }
 }

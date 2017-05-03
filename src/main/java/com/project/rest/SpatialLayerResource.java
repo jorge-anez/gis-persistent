@@ -43,6 +43,22 @@ public class SpatialLayerResource {
         sms.setData(layerDTO);
         return sms;
     }
+
+    @RequestMapping(value="/baseLayer", method= RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_VALUE})
+    public DataResponse getBaseLayer() {
+        DataResponse<LayerDTO> response = new DataResponse<LayerDTO>();
+        try {
+            LayerDTO layerDTO = spatialLayerService.getBaseLayer();
+            response.setData(layerDTO);
+        }catch(Exception exp) {
+            exp.printStackTrace();
+            response.setSuccess(Boolean.FALSE);
+            response.setErrorCode(100);
+            response.setErrorMessage("No base layer set");
+        }
+        return response;
+    }
+
     //list all geometries of a layer
     @RequestMapping(value="/{layerId}/listGeometries", method= RequestMethod.GET)
     public void listGeometries(@PathVariable("layerId") Long layerId, HttpServletResponse response){
@@ -107,7 +123,7 @@ public class SpatialLayerResource {
     public DataResponse saveLayer(@PathVariable("projectId") Long projectId, @RequestBody LayerDTO layerDTO) {
         DataResponse dataResponse  = new DataResponse();
         try{
-            spatialLayerService.createSpatialLayer(projectId, layerDTO);
+            spatialLayerService.createSpatialLayer(projectId == 0?null: projectId, layerDTO);
             dataResponse.setData(layerDTO);
         }catch (Exception exp) {
             dataResponse.setData(null);
