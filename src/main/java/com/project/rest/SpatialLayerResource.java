@@ -118,10 +118,10 @@ public class SpatialLayerResource {
 
     //save layer
     @RequestMapping(value="/save", method= RequestMethod.POST, produces = {MediaType.APPLICATION_JSON_VALUE})
-    public DataResponse saveLayer(@PathVariable("projectId") Long projectId, @RequestBody LayerDTO layerDTO) {
+    public DataResponse saveLayer(@RequestBody LayerDTO layerDTO, HttpSession httpSession) {
         DataResponse dataResponse  = new DataResponse();
         try{
-            spatialLayerService.createSpatialLayer(projectId == 0?null: projectId, layerDTO);
+            spatialLayerService.createSpatialLayer((Long)httpSession.getAttribute("projectId"), layerDTO);
             dataResponse.setData(layerDTO);
         }catch (Exception exp) {
             dataResponse.setData(null);
