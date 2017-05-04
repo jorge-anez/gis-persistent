@@ -1,4 +1,4 @@
-<%--
+<%@ page import="org.springframework.util.StringUtils" %><%--
   Created by IntelliJ IDEA.
   User: user
   Date: 1/4/2017
@@ -12,8 +12,13 @@
 </head>
 <body>
 <%
-    String redirectURL = "faces/index.xhtml";
-    response.sendRedirect(redirectURL);
+    String sessionVar = request.getParameter("projectId");
+    if(!StringUtils.isEmpty(sessionVar)) {
+        session.setAttribute("projectId", Long.parseLong(sessionVar));
+        response.sendRedirect("http://localhost:8080/gis-persistent/maps/app/app.html");
+    }else {
+        out.println("Error!");
+    }
 %>
 </body>
 </html>

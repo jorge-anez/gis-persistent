@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.*;
 import java.util.List;
 
@@ -24,7 +25,7 @@ import java.util.List;
  * Created by JORGE-HP on 29/4/2017.
  */
 @RestController
-@RequestMapping("/project/{projectId}/layer")
+@RequestMapping("/layer")
 public class SpatialLayerResource {
     @Autowired
     private SpatialLayerService spatialLayerService;
@@ -34,7 +35,7 @@ public class SpatialLayerResource {
         BaseResponse response = new BaseResponse();
         LayerDTO layerDTO = new LayerDTO();
         layerDTO.setLayerId(222L);
-        layerDTO.setLayerName("hllala");
+        layerDTO.setLayerName("Sample Layer");
         layerDTO.setEpsgCode(433);
         DataResponse<LayerDTO> sms = new DataResponse<LayerDTO>();
         sms.setData(layerDTO);
@@ -158,10 +159,10 @@ public class SpatialLayerResource {
     }
 
     @RequestMapping(value="/listAll", method= RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_VALUE})
-    public ListResponse listAll(@PathVariable Long projectId){
+    public ListResponse listAll(HttpSession httpSession){
         ListResponse<LayerDTO> response = new ListResponse<LayerDTO>();
         try {
-            List<LayerDTO> list = spatialLayerService.list(projectId);
+            List<LayerDTO> list = spatialLayerService.list((Long)httpSession.getAttribute("projectId"));
             response.setList(list);
         } catch (Exception e) {
             e.printStackTrace();
