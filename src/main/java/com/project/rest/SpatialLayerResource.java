@@ -92,11 +92,9 @@ public class SpatialLayerResource {
 
     //save all geometries of a layer
     @RequestMapping(value="/{layerId}/saveGeometries", method= RequestMethod.POST, produces = {MediaType.APPLICATION_JSON_VALUE})
-    public BaseResponse saveGeometriesLayer(@PathVariable("layerId") Long layerId, HttpServletRequest request){
+    public BaseResponse saveGeometriesLayer(@PathVariable("layerId") Long layerId, @RequestBody JSONObject obj){
         BaseResponse response = new BaseResponse();
         try {
-            JSONParser parser = new JSONParser();
-            JSONObject obj =(JSONObject) parser.parse(new InputStreamReader(request.getInputStream()));
             FeatureJSON fJSON = new FeatureJSON();
             fJSON.setFeatureType(createDefaultFeatureType());
             fJSON.setEncodeFeatureCollectionCRS(true);
