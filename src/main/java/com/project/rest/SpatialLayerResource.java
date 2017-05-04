@@ -92,15 +92,15 @@ public class SpatialLayerResource {
 
     //save all geometries of a layer
     @RequestMapping(value="/{layerId}/saveGeometries", method= RequestMethod.POST, produces = {MediaType.APPLICATION_JSON_VALUE})
-    public BaseResponse saveGeometriesLayer(@PathVariable("layerId") Long layerId, @RequestBody JSONObject obj){
+    public BaseResponse saveGeometriesLayer(@PathVariable("layerId") Long layerId, @RequestBody SpatialLayerRequest request){
         BaseResponse response = new BaseResponse();
         try {
             FeatureJSON fJSON = new FeatureJSON();
-            fJSON.setFeatureType(createDefaultFeatureType());
+            fJSON.setFeatureType(createDefaultFeatureType(request.getAttributeNames()));
             fJSON.setEncodeFeatureCollectionCRS(true);
             fJSON.setEncodeFeatureCRS(true);
             fJSON.setEncodeNullValues(true);
-            FeatureCollection<SimpleFeatureType, SimpleFeature> features = fJSON.readFeatureCollection(obj.toJSONString());
+            FeatureCollection<SimpleFeatureType, SimpleFeature> features = fJSON.readFeatureCollection(request.getGeojson().toJSONString());
             LayerDTO layerDTO = new LayerDTO();
             layerDTO.setLayerId(layerId);
             spatialLayerService.createLayerFeatures(layerDTO, features);
@@ -225,10 +225,12 @@ public class SpatialLayerResource {
         return buff;
     }
 
-    private SimpleFeatureType createDefaultFeatureType() throws FactoryException {
+    private SimpleFeatureType createDefaultFeatureType(List<String> attributes) throws FactoryException {
         SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
         builder.setName("Location");
         builder.add("geometry", Geometry.class);
+        for (String e: attributes)
+            builder.add(e, String.class);
         final SimpleFeatureType featureType = builder.buildFeatureType();
         return featureType;
     }
