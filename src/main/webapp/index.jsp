@@ -15,7 +15,7 @@
     String sessionVar = request.getParameter("projectId");
     if(!StringUtils.isEmpty(sessionVar)) {
         session.setAttribute("projectId", Long.parseLong(sessionVar));
-        response.sendRedirect("http://localhost:8080/gis-persistent/maps/app/app.html");
+        response.sendRedirect("http://localhost/maps/app/app.html");
     }else {
         out.println("Error!");
     }

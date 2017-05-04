@@ -1,9 +1,14 @@
 package com.project.rest;
 
 import com.project.model.transfer.*;
+import com.project.services.AttributeService;
 import com.project.services.SpatialLayerService;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryCollection;
 import org.geotools.feature.FeatureCollection;
+import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geojson.feature.FeatureJSON;
+import org.geotools.geojson.geom.GeometryJSON;
 import org.geotools.referencing.CRS;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -93,6 +98,7 @@ public class SpatialLayerResource {
             JSONParser parser = new JSONParser();
             JSONObject obj =(JSONObject) parser.parse(new InputStreamReader(request.getInputStream()));
             FeatureJSON fJSON = new FeatureJSON();
+            fJSON.setFeatureType(createDefaultFeatureType());
             fJSON.setEncodeFeatureCollectionCRS(true);
             fJSON.setEncodeFeatureCRS(true);
             fJSON.setEncodeNullValues(true);
@@ -219,5 +225,13 @@ public class SpatialLayerResource {
             buff.append(str);
         }
         return buff;
+    }
+
+    private SimpleFeatureType createDefaultFeatureType() throws FactoryException {
+        SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
+        builder.setName("Location");
+        builder.add("geometry", Geometry.class);
+        final SimpleFeatureType featureType = builder.buildFeatureType();
+        return featureType;
     }
 }
