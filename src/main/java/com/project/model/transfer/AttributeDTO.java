@@ -6,7 +6,7 @@ package com.project.model.transfer;
 public class AttributeDTO {
     private Long attributeId;
     private String attributeName;
-    private String classType;
+    private String attributeType;
 
     public Long getAttributeId() {
         return attributeId;
@@ -24,11 +24,11 @@ public class AttributeDTO {
         this.attributeName = attributeName;
     }
 
-    public String getClassType() {
-        return classType;
+    public String getAttributeType() {
+        return attributeType;
     }
 
-    public void setClassType(String classType) {
-        this.classType = classType;
+    public void setAttributeType(String attributeType) {
+        this.attributeType = attributeType;
     }
 }

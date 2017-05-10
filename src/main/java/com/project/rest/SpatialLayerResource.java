@@ -69,6 +69,7 @@ public class SpatialLayerResource {
             FeatureCollection<SimpleFeatureType, SimpleFeature>  features = spatialLayerService.getLayerInfo(layerId);
             FeatureJSON geojson = new FeatureJSON();
             geojson.setEncodeFeatureCollectionCRS(true);
+            geojson.setEncodeNullValues(true);
             response.reset();
             response.resetBuffer();
             response.setContentType("application/json");
@@ -96,14 +97,11 @@ public class SpatialLayerResource {
         BaseResponse response = new BaseResponse();
         try {
             FeatureJSON fJSON = new FeatureJSON();
-            fJSON.setFeatureType(createDefaultFeatureType(request.getAttributeNames()));
-            fJSON.setEncodeFeatureCollectionCRS(true);
+            fJSON.setFeatureType(createDefaultFeatureType(request.getAttributes()));
             fJSON.setEncodeFeatureCRS(true);
             fJSON.setEncodeNullValues(true);
             FeatureCollection<SimpleFeatureType, SimpleFeature> features = fJSON.readFeatureCollection(request.getGeojson().toJSONString());
-            LayerDTO layerDTO = new LayerDTO();
-            layerDTO.setLayerId(layerId);
-            spatialLayerService.createLayerFeatures(layerDTO, features);
+            spatialLayerService.createLayerFeatures(layerId, features, request.getAttributes());
         } catch (Exception e) {
             e.printStackTrace();
             response.setSuccess(Boolean.FALSE);
@@ -225,12 +223,12 @@ public class SpatialLayerResource {
         return buff;
     }
 
-    private SimpleFeatureType createDefaultFeatureType(List<String> attributes) throws FactoryException {
+    private SimpleFeatureType createDefaultFeatureType(List<AttributeDTO> attributes) throws FactoryException, ClassNotFoundException {
         SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
         builder.setName("Location");
         builder.add("geometry", Geometry.class);
-        for (String e: attributes)
-            builder.add(e, String.class);
+        for (AttributeDTO e: attributes)
+            builder.add(e.getAttributeName(), Class.forName("java.lang." + e.getAttributeType()));
         final SimpleFeatureType featureType = builder.buildFeatureType();
         return featureType;
     }

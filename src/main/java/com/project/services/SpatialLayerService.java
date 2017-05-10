@@ -20,7 +20,7 @@ public interface SpatialLayerService {
     void deleteSpatialLayer(LayerDTO layerDTO);
     LayerDTO getBaseLayer();
     List<LayerDTO> list(Long projectId);
-    void createLayerFeatures(LayerDTO layerDTO, FeatureCollection<SimpleFeatureType, SimpleFeature> collection);
+    void createLayerFeatures(Long layerId, FeatureCollection<SimpleFeatureType, SimpleFeature> collection, List<AttributeDTO> attributes);
     void updateLayerFeatures(LayerDTO layerDTO, FeatureCollection<SimpleFeatureType, SimpleFeature> collection);
     FeatureCollection<SimpleFeatureType, SimpleFeature> getLayerInfo(Long layerId) throws Exception;
 }

@@ -17,6 +17,7 @@ public class Attribute {
     private Long attributeId;
 
     private String attributeName;
+    private String attributeType;
 
     @OneToMany(mappedBy="attribute")
     private Collection<SpatialDataAttribute> spatialDataAttribute;
@@ -56,5 +57,13 @@ public class Attribute {
 
     public void setSpatialLayer(SpatialLayer spatialLayer) {
         this.spatialLayer = spatialLayer;
+    }
+
+    public String getAttributeType() {
+        return attributeType;
+    }
+
+    public void setAttributeType(String attributeType) {
+        this.attributeType = attributeType;
     }
 }

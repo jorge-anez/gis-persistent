@@ -36,6 +36,7 @@ public class AttributeServiceImpl implements AttributeService {
         SpatialLayer spatialLayer = new SpatialLayer();
         spatialLayer.setSpatialLayerId(spatialLayerId);
         attribute.setAttributeName(attributeDTO.getAttributeName());
+        attribute.setAttributeType(attributeDTO.getAttributeType());
         attribute.setSpatialLayer(spatialLayer);
         attributeDAO.save(attribute);
         attributeDTO.setAttributeId(attribute.getAttributeId());
@@ -63,7 +64,7 @@ public class AttributeServiceImpl implements AttributeService {
             AttributeDTO dto = new AttributeDTO();
             dto.setAttributeId(e.getAttributeId());
             dto.setAttributeName(e.getAttributeName());
-            dto.setClassType("String");
+            dto.setAttributeType(e.getAttributeType());
             dtos.add(dto);
         }
         return dtos;

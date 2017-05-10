@@ -77,7 +77,7 @@ public class FileResource {
                 LayerDTO layerDTO = new LayerDTO();
                 layerDTO.setLayerName(mapFiles.get("shp"));
                 layerDTO.setEpsgCode(CRS.lookupEpsgCode(collection.getSchema().getCoordinateReferenceSystem(), true));
-                spatialLayerService.createLayerFeatures(layerDTO, collection);
+                spatialLayerService.createLayerFeatures(null, collection, null);
                 return "You successfully uploaded ";
             } catch (Exception e) {
                 return "You failed to upload  => " + e.getMessage();

@@ -32,6 +32,7 @@ import org.opengis.referencing.crs.GeographicCRS;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.PostConstruct;
 import java.util.*;
@@ -146,20 +147,13 @@ public class SpatialLayerServiceImpl implements SpatialLayerService {
     }
 
     @Transactional
-    public void createLayerFeatures(LayerDTO layerDTO, FeatureCollection<SimpleFeatureType, SimpleFeature> collection) {
-        SpatialLayer spatialLayer = spatialLayerDAO.find(layerDTO.getLayerId());
-        if(spatialLayer == null) {
-            createSpatialLayer(null, layerDTO);
-        }
-        else {
-            spatialDataAttributeService.deleteAttributesValuesForLayer(layerDTO.getLayerId());
-            attributeService.deleteAttributesForLayer(layerDTO.getLayerId());
-            spatialDataService.deleteSpatialDataForLayer(layerDTO.getLayerId());
-        }
+    public void createLayerFeatures(Long layerId, FeatureCollection<SimpleFeatureType, SimpleFeature> collection, List<AttributeDTO> attributes) {
+        spatialDataAttributeService.deleteAttributesValuesForLayer(layerId);
+        attributeService.deleteAttributesForLayer(layerId);
+        spatialDataService.deleteSpatialDataForLayer(layerId);
 
-        List<AttributeDTO> attributes = getAttributes(collection.getSchema().getAttributeDescriptors());
         for (AttributeDTO e: attributes) {
-           attributeService.create(e, layerDTO.getLayerId());
+           attributeService.create(e, layerId);
         }
         FeatureIterator<SimpleFeature> featureIterator = collection.features();
         while (featureIterator.hasNext()) {
@@ -169,9 +163,10 @@ public class SpatialLayerServiceImpl implements SpatialLayerService {
             spatialData.setTheGeom(geometry);
             spatialData.setSource("geoJson");
             spatialData.setGeometryType(geometry.getGeometryType());
-            spatialDataService.persistFeatures(spatialData, layerDTO.getLayerId());
+            spatialDataService.persistFeatures(spatialData, layerId);
             for (AttributeDTO e: attributes) {
-                spatialDataAttributeService.create(feature.getAttribute(e.getAttributeName()).toString(), e, spatialData);
+                String value = feature.getAttribute(e.getAttributeName()) == null? "": feature.getAttribute(e.getAttributeName()).toString();
+                spatialDataAttributeService.create(value, e, spatialData);
             }
         }
     }
@@ -199,7 +194,7 @@ public class SpatialLayerServiceImpl implements SpatialLayerService {
             builder = new SimpleFeatureBuilder(featureTypes.get(e.getGeometryType()));
             builder.set("geometry", e.getTheGeom());
             for (SpatialDataAttribute a: e.getSpatialDataAttributes()) {
-                builder.set(a.getAttribute().getAttributeName(), a.getValue());
+                builder.set(a.getAttribute().getAttributeName(), StringUtils.isEmpty(a.getValue())? null: a.getValue());
             }
             SimpleFeature feature = builder.buildFeature(String.valueOf(e.getSpatialDataId()));
             featureCollection.add(feature);
@@ -208,25 +203,13 @@ public class SpatialLayerServiceImpl implements SpatialLayerService {
         return featureCollection;
     }
 
-
-    private List<AttributeDTO> getAttributes(List<AttributeDescriptor> descriptors) {
-        List<AttributeDTO> list = new ArrayList<AttributeDTO>(descriptors.size());
-        for (AttributeDescriptor e: descriptors) {
-            if("geometry".equals(e.getName().toString())) continue;
-            AttributeDTO dto = new AttributeDTO();
-            dto.setAttributeName(e.getName().toString());
-            dto.setClassType(e.getType().getBinding().getName());
-            list.add(dto);
-        }
-        return list;
-    }
-    private SimpleFeatureType createFeatureType(List<AttributeDTO> dtos, Class geometryType, Integer epsgCode) throws FactoryException {
+    private SimpleFeatureType createFeatureType(List<AttributeDTO> dtos, Class geometryType, Integer epsgCode) throws FactoryException, ClassNotFoundException {
         SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
         builder.setName("Location");
         builder.setCRS(CRS.decode("EPSG:" + epsgCode));
         builder.add("geometry", geometryType);
         for (AttributeDTO e: dtos)
-            builder.add(e.getAttributeName(), String.class);
+            builder.add(e.getAttributeName(), Class.forName("java.lang." + e.getAttributeType()));
         final SimpleFeatureType featureType = builder.buildFeatureType();
         return featureType;
     }

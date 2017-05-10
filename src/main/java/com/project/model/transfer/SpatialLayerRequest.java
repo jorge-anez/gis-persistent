@@ -1,6 +1,7 @@
 package com.project.model.transfer;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.json.simple.JSONObject;
 
 import javax.xml.bind.annotation.XmlRootElement;
@@ -12,16 +13,17 @@ import java.util.List;
  */
 @XmlRootElement
 @JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class SpatialLayerRequest {
-    private ArrayList<String> attributeNames;
+    private ArrayList<AttributeDTO> attributes;
     private JSONObject geojson;
 
-    public ArrayList<String> getAttributeNames() {
-        return attributeNames;
+    public ArrayList<AttributeDTO> getAttributes() {
+        return attributes;
     }
 
-    public void setAttributeNames(ArrayList<String> attributeNames) {
-        this.attributeNames = attributeNames;
+    public void setAttributes(ArrayList<AttributeDTO> attributes) {
+        this.attributes = attributes;
     }
 
     public JSONObject getGeojson() {
