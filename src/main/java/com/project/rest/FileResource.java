@@ -13,6 +13,7 @@ import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.data.shapefile.ShapefileDataStoreFactory;
 import org.geotools.data.shapefile.dbf.DbaseFileReader;
 
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.feature.DefaultFeatureCollection;
@@ -171,16 +172,11 @@ public class FileResource {
                 File f = new File(dirTemp + file.getOriginalFilename());
                 file.transferTo(f);
                 List<String> shapeNames = unZip(dirTemp, file.getOriginalFilename());
-                Collection<FeatureCollection> collection = new ArrayList<FeatureCollection>();
+                DefaultFeatureCollection features = new DefaultFeatureCollection();
                 for(String e: shapeNames) {
-                    FeatureCollection featureCollection = readSHP(dirTemp + "/" + e);
-                    collection.add(featureCollection);
+                    features.addAll(readSHP(dirTemp + "/" + e));
                 }
-                //System.out.println(shapeNames);
-                /*
-                Map<String, String> mapFiles = SpacialFileUtils.getFileExtension(pathFiles);
-                String p = dirTemp + mapFiles.get("shp") + ".shp";
-                FeatureCollection<SimpleFeatureType, SimpleFeature> collection = readSHP(p);
+                SimpleFeatureCollection collection = features.collection();
                 FeatureJSON json = new FeatureJSON();
                 json.setEncodeFeatureCollectionCRS(true);
                 response.reset();
@@ -190,7 +186,6 @@ public class FileResource {
                 json.writeFeatureCollection(collection, ouputStream);
                 ouputStream.flush();
                 ouputStream.close();
-                */
             } catch (Exception e) {
 
             }
@@ -260,30 +255,6 @@ public class FileResource {
         dbfReader.close();
         fis.close();
 
-    }
-
-    @RequestMapping(value="/list", method= RequestMethod.GET)
-    public void list(HttpServletResponse response){
-        //FeatureCollection<SimpleFeatureType, SimpleFeature>  features = spatialLayerService.getLayerInfo(1L);
-        //JSONParser parser = new JSONParser();
-        //Object obj = parser.parse(reader);
-        FeatureJSON json = new FeatureJSON();
-        //json.setEncodeFeatureCRS(true);
-        try {
-            response.reset();
-            response.resetBuffer();
-            response.setContentType("application/json");
-            ServletOutputStream ouputStream = response.getOutputStream();
-            //json.writeFeatureCollection(features, ouputStream);
-            ouputStream.flush();
-            ouputStream.close();
-            //String str = new String(stream.toByteArray());
-            //System.out.println(str);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        //FeatureCollection fc = fJSON.readFeatureCollection(obj.toString());
-        //FeatureIterator<SimpleFeature> features = fc.features();
     }
 
     @RequestMapping(value="/projection", method= RequestMethod.GET)

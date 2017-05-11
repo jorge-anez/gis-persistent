@@ -192,10 +192,10 @@ public class SpatialLayerResource {
         return response;
     }
 
-    @RequestMapping(value="/projection", method= RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_VALUE})
-    public void getProjection(HttpServletResponse response){
+    @RequestMapping(value="{layerId}/projection", method= RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_VALUE})
+    public void getProjection(@PathVariable("layerId") Long layerId, HttpServletResponse response){
         FeatureJSON json = new FeatureJSON();
-        LayerDTO layerDTO = spatialLayerService.getLayerById(1L);
+        LayerDTO layerDTO = spatialLayerService.getLayerById(layerId);
         try {
             response.reset();
             response.resetBuffer();
