@@ -40,6 +40,7 @@ import java.io.*;
 import java.nio.charset.Charset;
 import java.util.*;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
 /**
@@ -163,6 +164,39 @@ public class FileResource {
         }
     }
 
+    @RequestMapping(value="/temp/upload/zip", method= RequestMethod.POST)
+    public void tempUploadZip(@ModelAttribute("uploadFile") MultipartFile file, HttpServletResponse response){
+        if (!file.isEmpty() && file.getOriginalFilename().endsWith(".zip")) {
+            try {
+                File f = new File(dirTemp + file.getOriginalFilename());
+                file.transferTo(f);
+                List<String> shapeNames = unZip(dirTemp, file.getOriginalFilename());
+                Collection<FeatureCollection> collection = new ArrayList<FeatureCollection>();
+                for(String e: shapeNames) {
+                    FeatureCollection featureCollection = readSHP(dirTemp + "/" + e);
+                    collection.add(featureCollection);
+                }
+                //System.out.println(shapeNames);
+                /*
+                Map<String, String> mapFiles = SpacialFileUtils.getFileExtension(pathFiles);
+                String p = dirTemp + mapFiles.get("shp") + ".shp";
+                FeatureCollection<SimpleFeatureType, SimpleFeature> collection = readSHP(p);
+                FeatureJSON json = new FeatureJSON();
+                json.setEncodeFeatureCollectionCRS(true);
+                response.reset();
+                response.resetBuffer();
+                response.setContentType("application/json");
+                ServletOutputStream ouputStream = response.getOutputStream();
+                json.writeFeatureCollection(collection, ouputStream);
+                ouputStream.flush();
+                ouputStream.close();
+                */
+            } catch (Exception e) {
+
+            }
+        }
+    }
+
     public FeatureIterator<SimpleFeature> readJSON(InputStreamReader reader) throws Exception{
             System.out.println("INTO PARSINGJSON");
             JSONParser parser = new JSONParser();
@@ -209,7 +243,6 @@ public class FileResource {
 // tried to compile this).  The example assumes the first field has a
 // character data type and the second has a numeric data type:
     public void readDBF(String path) throws IOException {
-
         FileInputStream fis = new FileInputStream( path );
         DbaseFileReader dbfReader =  new DbaseFileReader(fis.getChannel(),
                 false,  Charset.forName("ISO-8859-1"));
@@ -331,5 +364,23 @@ public class FileResource {
         }catch(IOException ex){
             ex.printStackTrace();
         }
+    }
+
+    public List<String> unZip(String dirTemp, String zipPath) throws IOException {
+        List<String> shapeNames = new ArrayList<String>();
+        ZipFile zipFile = new ZipFile(dirTemp + "/" +zipPath);
+        Enumeration<? extends ZipEntry> entries = zipFile.entries();
+        while(entries.hasMoreElements()){
+            ZipEntry entry = entries.nextElement();
+            InputStream inputStream = zipFile.getInputStream(entry);
+            OutputStream outputStream = new FileOutputStream(dirTemp + "/" + entry.getName());
+            IOUtils.copy(inputStream, outputStream);
+            if(entry.getName().endsWith(".shp"))
+                shapeNames.add(entry.getName());
+            inputStream.close();
+            outputStream.close();
+        }
+        zipFile.close();
+        return shapeNames;
     }
 }
