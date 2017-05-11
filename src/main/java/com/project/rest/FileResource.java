@@ -15,6 +15,7 @@ import org.geotools.data.shapefile.dbf.DbaseFileReader;
 
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.data.simple.SimpleFeatureStore;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
@@ -29,6 +30,7 @@ import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -54,6 +56,50 @@ public class FileResource {
 
     @Value("${dir.upload.cache}")
     private String dirTemp;
+
+    @RequestMapping(value="/layer/{layerId}/download", method= RequestMethod.GET)
+    public void listGeometries(@PathVariable("layerId") Long layerId, HttpServletResponse response){
+        try {
+            LayerDTO layerDTO = spatialLayerService.getLayerById(layerId);
+            FeatureCollection<SimpleFeatureType, SimpleFeature>  features = spatialLayerService.getLayerInfo(layerId);
+            FeatureIterator<SimpleFeature> featureIterator = features.features();
+            Map<String, DefaultFeatureCollection> collectionMap = new HashMap<String, DefaultFeatureCollection>();
+
+            while (featureIterator.hasNext()) {
+                SimpleFeature feature = featureIterator.next();
+                String classType = feature.getDefaultGeometry().getClass().getSimpleName().toLowerCase();
+                DefaultFeatureCollection collection = collectionMap.get(classType);
+                if(collection == null) {
+                    collection = new DefaultFeatureCollection(null, features.getSchema());
+                    collectionMap.put(classType, collection);
+                }
+                collection.add(feature);
+            }
+
+            List<String> fileNames = new ArrayList<String>();
+            String layerName = layerDTO.getLayerName().replaceAll("\\s+","");
+            for(Map.Entry<String, DefaultFeatureCollection> e: collectionMap.entrySet()) {
+                String fileName = layerName + "_" + e.getKey();
+                writeSHP(e.getValue(), dirTemp,  fileName);
+                for(String ext : Arrays.asList(".shp", ".dbf", ".shx", ".prj", ".fix")) {
+                    fileNames.add(fileName + ext);
+                }
+            }
+            zipFile(dirTemp, layerName, fileNames);
+
+            response.reset();
+            response.resetBuffer();
+            response.setContentType("application/zip");
+            ServletOutputStream ouputStream = response.getOutputStream();
+            InputStream inputStream = new FileInputStream(dirTemp + "/" + layerName + ".zip");
+            IOUtils.copy(inputStream, ouputStream);
+            ouputStream.flush();
+            ouputStream.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     @RequestMapping(value="/upload", method= RequestMethod.POST)
     public String handleFileUpload(@ModelAttribute("uploadFile") FileUploadForm files){
@@ -87,7 +133,6 @@ public class FileResource {
             return "You failed to upload  because the file was empty.";
 
     }
-
 
     @RequestMapping(value="/temp/upload", method= RequestMethod.POST)
     public void tempUpload(@ModelAttribute("uploadFile") FileUploadForm files, HttpServletResponse response){
@@ -208,27 +253,6 @@ public class FileResource {
         //FeatureIterator<SimpleFeature> features = fc.features();
     }
 
-    @RequestMapping(value="/download", method= RequestMethod.GET)
-    public void downloadAsSHP(HttpServletResponse response){
-        try {
-            LayerDTO layerDTO = spatialLayerService.getLayerById(1L);
-            FeatureCollection<SimpleFeatureType, SimpleFeature>  features = spatialLayerService.getLayerInfo(1L);
-            writeSHP(features, dirTemp, layerDTO.getLayerName());
-            zipFile(dirTemp, layerDTO.getLayerName(), Arrays.asList("shp", "dbf", "shx", "prj"));
-            response.reset();
-            response.resetBuffer();
-            response.setContentType("application/zip");
-            ServletOutputStream ouputStream = response.getOutputStream();
-            InputStream inputStream = new FileInputStream(dirTemp + "/" + layerDTO.getLayerName() + ".zip");
-            IOUtils.copy(inputStream, ouputStream);
-            ouputStream.flush();
-            ouputStream.close();
-            inputStream.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     @RequestMapping(value="/projection", method= RequestMethod.GET)
     public void getProjection(HttpServletResponse response){
         FeatureJSON json = new FeatureJSON();
@@ -251,7 +275,7 @@ public class FileResource {
     }
 
     public void writeSHP(FeatureCollection<SimpleFeatureType, SimpleFeature> collection, String dir, String fileName) throws Exception{
-        String saveFilepath = String.format("%s/%s.shp", dir, fileName);
+        String saveFilepath = dir + fileName + ".shp";
         File theFile = new File(saveFilepath);
         ShapefileDataStoreFactory dataStoreFactory = new ShapefileDataStoreFactory();
         Map<String, Serializable> params = new HashMap<String, Serializable>();
@@ -285,17 +309,17 @@ public class FileResource {
         }
     }
 
-    void zipFile(String dir, String fileName, List<String> exts) {
+    void zipFile(String dir, String layerName, List<String> fileNames) {
         byte[] buffer = new byte[1024];
         try{
-            File file = new File(dir + "/" + fileName + ".zip");
+            File file = new File(dir + "/" + layerName + ".zip");
             file.createNewFile();
             FileOutputStream fos = new FileOutputStream(file);
             ZipOutputStream zos = new ZipOutputStream(fos);
-            for(String ext: exts) {
-                ZipEntry ze= new ZipEntry(fileName + "." + ext);
+            for(String fileName: fileNames) {
+                ZipEntry ze= new ZipEntry(fileName);
                 zos.putNextEntry(ze);
-                FileInputStream in = new FileInputStream(dir + "/" + fileName + "." + ext);
+                FileInputStream in = new FileInputStream(dir + "/" + fileName);
                 int len;
                 while ((len = in.read(buffer)) > 0) {
                     zos.write(buffer, 0, len);
