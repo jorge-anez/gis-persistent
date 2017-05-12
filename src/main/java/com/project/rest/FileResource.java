@@ -6,6 +6,7 @@ import com.project.services.SpatialDataService;
 import com.project.services.SpatialLayerService;
 import com.project.utils.SpacialFileUtils;
 import com.vividsolutions.jts.geom.Geometry;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.geotools.data.*;
 import org.geotools.data.memory.MemoryFeatureCollection;
@@ -23,6 +24,7 @@ import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geojson.feature.FeatureJSON;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
+import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -60,7 +62,7 @@ public class FileResource {
     private String dirTemp;
 
     @RequestMapping(value="/layer/{layerId}/download", method= RequestMethod.GET)
-    public void listGeometries(@PathVariable("layerId") Long layerId, HttpServletResponse response){
+    public void downloadLayer(@PathVariable("layerId") Long layerId, HttpServletResponse response){
         try {
             LayerDTO layerDTO = spatialLayerService.getLayerById(layerId);
             FeatureCollection<SimpleFeatureType, SimpleFeature>  features = spatialLayerService.getLayerInfo(layerId);
@@ -137,36 +139,47 @@ public class FileResource {
     }
 
     @RequestMapping(value="/temp/upload", method= RequestMethod.POST)
-    public void tempUpload(@ModelAttribute("uploadFile") FileUploadForm files, HttpServletResponse response){
-        List<String> pathFiles = new ArrayList<String>();
+    public JSONObject tempUpload(@ModelAttribute("uploadFile") FileUploadForm files){
+        JSONObject jsonObject = new JSONObject();
+        TreeMap<String, List<String>> map = new TreeMap<String, List<String>>();
         if (!files.getFiles().isEmpty()) {
             try {
                 File file;
                 for (MultipartFile e: files.getFiles()) {
                     file = new File(dirTemp + e.getOriginalFilename());
                     e.transferTo(file);
-                    pathFiles.add(e.getOriginalFilename());
+                    String fileName = FilenameUtils.getBaseName(e.getOriginalFilename());
+                    String fileExt = FilenameUtils.getExtension(e.getOriginalFilename());
+                    List<String> exts = map.get(fileName);
+                    if(exts == null)
+                        exts = new ArrayList<String>();
+                    exts.add(fileExt);
+                    map.put(fileName, exts);
                 }
-                Map<String, String> mapFiles = SpacialFileUtils.getFileExtension(pathFiles);
-                String p = dirTemp + mapFiles.get("shp") + ".shp";
-                FeatureCollection<SimpleFeatureType, SimpleFeature> collection = readSHP(p);
+                if(map.size() != 1)
+                    throw  new Exception("Error");
+                String fileName = map.firstKey();
+                FeatureCollection<SimpleFeatureType, SimpleFeature> collection = readSHP(dirTemp + fileName + ".shp");
                 FeatureJSON json = new FeatureJSON();
                 json.setEncodeFeatureCollectionCRS(true);
-                response.reset();
-                response.resetBuffer();
-                response.setContentType("application/json");
-                ServletOutputStream ouputStream = response.getOutputStream();
-                json.writeFeatureCollection(collection, ouputStream);
-                ouputStream.flush();
-                ouputStream.close();
+                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                json.writeFeatureCollection(collection, outputStream);
+                ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+                JSONParser parser = new JSONParser();
+                Object geoJson = parser.parse(new InputStreamReader(inputStream));
+                jsonObject.put("success", Boolean.TRUE);
+                jsonObject.put("name", fileName);
+                jsonObject.put("data", geoJson);
             } catch (Exception e) {
-
+                jsonObject.put("success", Boolean.FALSE);
             }
         }
+        return jsonObject;
     }
 
     @RequestMapping(value="/temp/upload/zip", method= RequestMethod.POST)
-    public void tempUploadZip(@ModelAttribute("uploadFile") MultipartFile file, HttpServletResponse response){
+    public JSONObject tempUploadZip(@ModelAttribute("uploadFile") MultipartFile file, HttpServletResponse response){
+        JSONObject jsonObject = new JSONObject();
         if (!file.isEmpty() && file.getOriginalFilename().endsWith(".zip")) {
             try {
                 File f = new File(dirTemp + file.getOriginalFilename());
@@ -179,17 +192,19 @@ public class FileResource {
                 SimpleFeatureCollection collection = features.collection();
                 FeatureJSON json = new FeatureJSON();
                 json.setEncodeFeatureCollectionCRS(true);
-                response.reset();
-                response.resetBuffer();
-                response.setContentType("application/json");
-                ServletOutputStream ouputStream = response.getOutputStream();
-                json.writeFeatureCollection(collection, ouputStream);
-                ouputStream.flush();
-                ouputStream.close();
+                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                json.writeFeatureCollection(collection, outputStream);
+                ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+                JSONParser parser = new JSONParser();
+                Object geoJson = parser.parse(new InputStreamReader(inputStream));
+                jsonObject.put("success", Boolean.TRUE);
+                jsonObject.put("name", FilenameUtils.getBaseName(file.getOriginalFilename()));
+                jsonObject.put("data", geoJson);
             } catch (Exception e) {
-
+                jsonObject.put("success", Boolean.FALSE);
             }
         }
+        return jsonObject;
     }
 
     public FeatureIterator<SimpleFeature> readJSON(InputStreamReader reader) throws Exception{
