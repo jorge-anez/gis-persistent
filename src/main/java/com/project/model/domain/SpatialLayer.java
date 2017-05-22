@@ -34,6 +34,10 @@ public class SpatialLayer {
     @OneToMany(mappedBy="spatialLayer")
     private Collection<Attribute> attributes;
 
+    @OneToMany(mappedBy="spatialLayer")
+    private Collection<SpatialLayerStyle> layerStyles;
+
+
     public Long getSpatialLayerId() {
         return spatialLayerId;
     }

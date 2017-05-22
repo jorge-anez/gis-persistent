@@ -74,8 +74,16 @@ public class StyleResource {
             SimpleFeatureType type = DataUtilities.createType("location","geom:LineString,name:String");
             SimpleFeatureType type1 = DataUtilities.createType("location","geom:Polygon,name:String");
             DefaultFeatureCollection featureCollection = new DefaultFeatureCollection("style");
-            featureCollection.add(SimpleFeatureBuilder.build(type, new Object[]{line}, "1"));
-            featureCollection.add(SimpleFeatureBuilder.build(type1, new Object[]{polygon}, "2"));
+
+            SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
+            builder.set("geom", line);
+            builder.set("name", "line");
+            featureCollection.add(builder.buildFeature("1"));
+
+            builder = new SimpleFeatureBuilder(type1);
+            builder.set("geom", polygon);
+            builder.set("name", "polygon");
+            featureCollection.add(builder.buildFeature("2"));
 
             MapContent map = new MapContent();
             map.setTitle("Styling");
@@ -84,9 +92,11 @@ public class StyleResource {
 
             FeatureTypeStyle[] styles = SLD.featureTypeStyles(sld);
             FeatureTypeStyle typeStyle = styles[0];//SLD.featureTypeStyle(sld, type);
+
             StyleBuilder styleBuilder = new StyleBuilder();
             Style style = styleBuilder.createStyle();
             style.featureTypeStyles().add(typeStyle);
+            style.featureTypeStyles().add(styles[1]);
             //style.featureTypeStyles().add(styles[1]);
 
             Layer layer = new FeatureLayer(featureCollection, style);
