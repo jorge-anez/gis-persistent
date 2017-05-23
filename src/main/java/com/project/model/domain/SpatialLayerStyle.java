@@ -7,6 +7,11 @@ import javax.persistence.*;
  */
 @Entity
 @Table(name = "t_spatial_layer_style")
+@NamedQueries(
+        {
+                @NamedQuery(name="getLayerStyles", query="FROM SpatialLayerStyle ls LEFT JOIN FETCH ls.style s WHERE ls.spatialLayer.spatialLayerId = :layerId")
+        }
+)
 public class SpatialLayerStyle {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)

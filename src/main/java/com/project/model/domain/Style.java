@@ -8,6 +8,11 @@ import java.util.Collection;
  */
 @Entity
 @Table(name = "t_style")
+@NamedQueries(
+    {
+        @NamedQuery(name="getStyles", query="FROM Style s WHERE concat(s.geometryTypeStyle, '.', s.styleName) IN (:styles)")
+    }
+)
 public class Style {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)

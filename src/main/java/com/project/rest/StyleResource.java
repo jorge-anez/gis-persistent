@@ -2,8 +2,10 @@ package com.project.rest;
 
 import com.project.services.SpatialDataService;
 import com.project.services.SpatialLayerService;
+import com.project.services.SpatialLayerStyleService;
 import com.vividsolutions.jts.geom.*;
 import com.vividsolutions.jts.geom.Polygon;
+import org.apache.commons.io.IOUtils;
 import org.geotools.data.DataUtilities;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
@@ -22,6 +24,7 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,15 +36,22 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @RestController
 @RequestMapping("/style")
 public class StyleResource {
 
+    @Autowired
+    private SpatialLayerStyleService spatialLayerStyleService;
     @Autowired
     private SpatialLayerService spatialLayerService;
     @Autowired
@@ -98,10 +108,10 @@ public class StyleResource {
             style.featureTypeStyles().add(typeStyle);
             style.featureTypeStyles().add(styles[1]);
             //style.featureTypeStyles().add(styles[1]);
+            String str = "joder";
 
             Layer layer = new FeatureLayer(featureCollection, style);
             map.addLayer(layer);
-            System.out.println(sld);
 
 
             GTRenderer renderer = new StreamingRenderer();
@@ -127,9 +137,33 @@ public class StyleResource {
             ImageIO.write(image, "png", ouputStream);
             ouputStream.flush();
             ouputStream.close();
+            /*
+            String string = "${Point.stroke}ksklsk${Point.fill}";
+            List<String> list = find(string);
+            Map<String, String> result =  spatialLayerStyleService.getSpatialLayerStyles(0L, list);
+            System.out.println(replaceVariables(string, result));
+            */
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
+    @RequestMapping(value = "/layer/{layerId}/sld", method=RequestMethod.GET, produces = MediaType.IMAGE_PNG_VALUE)
+    public void getSLD(Long layerId, HttpServletResponse response){
+        try {
+            String result = spatialLayerStyleService.readSLDStyle(layerId);
+            response.reset();
+            response.resetBuffer();
+            response.setContentType("application/xml");
+            ServletOutputStream ouputStream = response.getOutputStream();
+            IOUtils.write(result, ouputStream);
+            ouputStream.flush();
+            ouputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
 }
