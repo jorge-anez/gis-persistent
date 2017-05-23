@@ -9,16 +9,16 @@
 >
 
 	<sld:NamedLayer>
-    <sld:Name>Land</sld:Name>
+    <sld:Name>style-template</sld:Name>
     <sld:UserStyle>
-      <sld:Name>Land Style</sld:Name>
+      <sld:Name>layerStyle</sld:Name>
       <sld:IsDefault>1</sld:IsDefault>
 
 	  <sld:FeatureTypeStyle>
           <Rule>
               <ogc:Filter>
                   <ogc:PropertyIsEqualTo>
-                      <ogc:PropertyName>type</ogc:PropertyName>
+                      <ogc:PropertyName>geometryType</ogc:PropertyName>
                       <ogc:Literal>Point</ogc:Literal>
                   </ogc:PropertyIsEqualTo>
               </ogc:Filter>
@@ -37,7 +37,7 @@
           <Rule>
               <ogc:Filter>
                   <ogc:PropertyIsEqualTo>
-                      <ogc:PropertyName>type</ogc:PropertyName>
+                      <ogc:PropertyName>geometryType</ogc:PropertyName>
                       <ogc:Literal>Line</ogc:Literal>
                   </ogc:PropertyIsEqualTo>
               </ogc:Filter>
@@ -51,7 +51,7 @@
           <Rule>
               <ogc:Filter>
                   <ogc:PropertyIsEqualTo>
-                      <ogc:PropertyName>type</ogc:PropertyName>
+                      <ogc:PropertyName>geometryType</ogc:PropertyName>
                       <ogc:Literal>Polygon</ogc:Literal>
                   </ogc:PropertyIsEqualTo>
               </ogc:Filter>

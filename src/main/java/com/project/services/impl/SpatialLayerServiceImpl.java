@@ -193,6 +193,7 @@ public class SpatialLayerServiceImpl implements SpatialLayerService {
         for (SpatialData e: spatialDataList) {
             builder = new SimpleFeatureBuilder(featureTypes.get(e.getGeometryType()));
             builder.set("geometry", e.getTheGeom());
+            builder.set("geometryType", e.getGeometryType());
             for (SpatialDataAttribute a: e.getSpatialDataAttributes()) {
                 builder.set(a.getAttribute().getAttributeName(), StringUtils.isEmpty(a.getValue())? null: a.getValue());
             }
@@ -208,6 +209,7 @@ public class SpatialLayerServiceImpl implements SpatialLayerService {
         builder.setName("Location");
         builder.setCRS(CRS.decode("EPSG:" + epsgCode));
         builder.add("geometry", geometryType);
+        builder.add("geometryType", String.class);
         for (AttributeDTO e: dtos)
             builder.add(e.getAttributeName(), Class.forName("java.lang." + e.getAttributeType()));
         final SimpleFeatureType featureType = builder.buildFeatureType();
