@@ -28,7 +28,13 @@
                           <WellKnownName>circle</WellKnownName>
                           <Fill>
                               <CssParameter name="fill">${Point.fill}</CssParameter>
+                              <CssParameter name="fill-opacity">${Point.fill-opacity}</CssParameter>
                           </Fill>
+                          <Stroke>
+                            <CssParameter name="stroke">${Point.stroke}</CssParameter>
+                            <CssParameter name="stroke-width">${Point.stroke-width}</CssParameter>
+                          </Stroke>
+
                       </Mark>
                       <Size>6</Size>
                   </Graphic>
@@ -64,7 +70,12 @@
               <PolygonSymbolizer>
                   <Fill>
                       <CssParameter name="fill">${Polygon.fill}</CssParameter>
+                      <CssParameter name="fill-opacity">${Polygon.fill-opacity}</CssParameter>
                   </Fill>
+                  <Stroke>
+                    <CssParameter name="stroke">${Polygon.stroke}</CssParameter>
+                    <CssParameter name="stroke-width">${Polygon.stroke-width}</CssParameter>
+                  </Stroke>
               </PolygonSymbolizer>
           </Rule>
 
