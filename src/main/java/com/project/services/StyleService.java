@@ -13,4 +13,5 @@ import java.util.List;
 public interface StyleService {
     void create(String name, String defaultValue);
     List<Style> getStyles(List<String> styleNames);
+    public List<Style> getStyles(List<String> styleNames, String geometryType);
 }

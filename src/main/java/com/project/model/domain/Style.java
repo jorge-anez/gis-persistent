@@ -11,6 +11,7 @@ import java.util.Collection;
 @NamedQueries(
     {
         @NamedQuery(name="getStyles", query="FROM Style s WHERE concat(s.geometryTypeStyle, '.', s.styleName) IN (:styles)")
+      , @NamedQuery(name="getStylesByType", query="FROM Style s WHERE s.geometryTypeStyle = :geomtryType AND s.styleName IN (:styles)")
     }
 )
 public class Style {

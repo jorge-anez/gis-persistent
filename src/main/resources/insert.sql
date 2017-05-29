@@ -33,6 +33,6 @@ INSERT INTO t_style (style_name, geometry_type_style, default_value) VALUE
 , ('font-size',      'Text', '12')
 , ('font-style',     'Text', 'normal')
 , ('font-weight',    'Text', 'bold')
-, ('fill',           'Text', '#000000')
+, ('fill',           'Text', '#000000');
 
 

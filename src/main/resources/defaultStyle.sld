@@ -36,10 +36,16 @@
           </Rule>
           <Rule>
               <ogc:Filter>
+                <ogc:Or>
                   <ogc:PropertyIsEqualTo>
                       <ogc:PropertyName>geometryType</ogc:PropertyName>
                       <ogc:Literal>Line</ogc:Literal>
                   </ogc:PropertyIsEqualTo>
+                  <ogc:PropertyIsEqualTo>
+                      <ogc:PropertyName>geometryType</ogc:PropertyName>
+                      <ogc:Literal>LineString</ogc:Literal>
+                  </ogc:PropertyIsEqualTo>
+                </ogc:Or>
               </ogc:Filter>
               <LineSymbolizer>
                   <Stroke>

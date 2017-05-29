@@ -41,8 +41,31 @@ public class SpatialLayerStyleServiceImpl implements SpatialLayerStyleService {
         spatialLayerStyleDAO = new GenericDAOImpl<SpatialLayerStyle, Long>(sessionFactory, SpatialLayerStyle.class);
     }
 
-    public void persistStyle(Map<String, String> styles, Long layerId) {
-
+    @Transactional
+    public void persistStyle(Map<String, String> styleMap, Long layerId, String geometryType) throws Exception {
+        List<String> styleNames = new ArrayList<String>(styleMap.keySet());
+        List<Style> styles = styleService.getStyles(styleNames, geometryType);
+        Query query = spatialLayerStyleDAO.getNamedQuery("getLayerStyles");
+        query.setParameter("layerId", layerId);
+        List<SpatialLayerStyle> spatialLayerStyles = query.list();
+        Map<Long, SpatialLayerStyle> map = new HashMap<Long, SpatialLayerStyle>(spatialLayerStyles.size());
+        for(SpatialLayerStyle e: spatialLayerStyles)
+            map.put(e.getStyle().getStyleId(), e);
+        for(Style s: styles) {
+            SpatialLayerStyle layerStyle = map.get(s.getStyleId());
+            if(layerStyle == null) {
+                layerStyle = new SpatialLayerStyle();
+                layerStyle.setStyle(s);
+                layerStyle.setValue(styleMap.get(s.getStyleName()));
+                SpatialLayer layer = new SpatialLayer();
+                layer.setSpatialLayerId(layerId);
+                layerStyle.setSpatialLayer(layer);
+                spatialLayerStyleDAO.save(layerStyle);
+            }else {
+                layerStyle.setValue(styleMap.get(s.getStyleName()));
+                spatialLayerStyleDAO.update(layerStyle);
+            }
+        }
     }
 
     @Transactional

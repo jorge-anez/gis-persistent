@@ -45,4 +45,12 @@ public class StyleServiceImpl implements StyleService {
         query.setParameterList("styles", styleNames);
         return query.list();
     }
+
+    @Transactional
+    public List<Style> getStyles(List<String> styleNames, String geometryType) {
+        Query query = styleDAO.getNamedQuery("getStylesByType");
+        query.setParameterList("styles", styleNames);
+        query.setParameter("geomtryType", geometryType);
+        return query.list();
+    }
 }

@@ -1,5 +1,6 @@
 package com.project.rest;
 
+import com.project.model.transfer.BaseResponse;
 import com.project.services.SpatialDataService;
 import com.project.services.SpatialLayerService;
 import com.project.services.SpatialLayerStyleService;
@@ -26,10 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.imageio.ImageIO;
 import javax.servlet.ServletOutputStream;
@@ -149,8 +147,8 @@ public class StyleResource {
         }
     }
 
-    @RequestMapping(value = "/layer/{layerId}/sld", method=RequestMethod.GET, produces = MediaType.IMAGE_PNG_VALUE)
-    public void getSLD(Long layerId, HttpServletResponse response){
+    @RequestMapping(value = "/layer/{layerId}/sld", method=RequestMethod.GET, produces = MediaType.APPLICATION_XML_VALUE)
+    public void getSLD(@PathVariable("layerId") Long layerId, HttpServletResponse response){
         try {
             String result = spatialLayerStyleService.readSLDStyle(layerId);
             response.reset();
@@ -163,6 +161,18 @@ public class StyleResource {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @RequestMapping(value = "/layer/{layerId}/geometryType/{geometryType}/save", method=RequestMethod.POST)
+    public BaseResponse saveStyleSLD(@PathVariable("layerId") Long layerId, @PathVariable("geometryType") String geometryType, @RequestBody Map<String, String> attrs){
+        BaseResponse response = new BaseResponse();
+        try {
+            spatialLayerStyleService.persistStyle(attrs, layerId, geometryType);
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setSuccess(Boolean.FALSE);
+        }
+        return response;
     }
 
 
