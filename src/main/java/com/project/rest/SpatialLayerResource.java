@@ -147,11 +147,11 @@ public class SpatialLayerResource {
         return response;
     }
 
-    @RequestMapping(value="/delete", method= RequestMethod.POST)
-    public BaseResponse deleteLayer(@RequestBody LayerDTO layerDTO) {
+    @RequestMapping(value="/{layerId}/delete", method= RequestMethod.POST)
+    public BaseResponse deleteLayer(@PathVariable("layerId") Long layerId) {
         BaseResponse response = new BaseResponse();
         try{
-            spatialLayerService.deleteSpatialLayer(layerDTO);
+            spatialLayerService.deleteSpatialLayer(layerId);
         }catch (Exception exp) {
             response.setSuccess(Boolean.FALSE);
             response.setErrorCode(3);

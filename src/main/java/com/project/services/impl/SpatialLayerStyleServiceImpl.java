@@ -105,6 +105,12 @@ public class SpatialLayerStyleServiceImpl implements SpatialLayerStyleService {
         return result;
     }
 
+    @Transactional
+    public void deleteStyles(Long layerId){
+        String sql = String.format("DELETE FROM t_spatial_layer_style WHERE spatial_layer_id = %d", layerId);
+        sessionFactory.getCurrentSession().createSQLQuery(sql).executeUpdate();
+    }
+
     private List<String> find(String string) {
         Pattern pattern = Pattern.compile("(\\$\\{)([^}]+)(\\})");
         Matcher matcher = pattern.matcher(string);

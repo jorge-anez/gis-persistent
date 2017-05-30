@@ -12,5 +12,6 @@ import java.util.Map;
 public interface SpatialLayerStyleService {
     void persistStyle(Map<String, String> styles, Long layerId, String geometryType) throws Exception;
     Map<String, String> getSpatialLayerStyles(Long layerId, List<String> styleNames);
-    public String readSLDStyle(Long layerId) throws Exception;
+    String readSLDStyle(Long layerId) throws Exception;
+    void deleteStyles(Long layerId);
 }

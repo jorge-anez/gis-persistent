@@ -4,10 +4,7 @@ import com.project.dao.GenericDAOImpl;
 import com.project.model.domain.*;
 import com.project.model.transfer.AttributeDTO;
 import com.project.model.transfer.LayerDTO;
-import com.project.services.AttributeService;
-import com.project.services.SpatialDataAttributeService;
-import com.project.services.SpatialDataService;
-import com.project.services.SpatialLayerService;
+import com.project.services.*;
 import com.vividsolutions.jts.geom.*;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureCollection;
@@ -49,6 +46,9 @@ public class SpatialLayerServiceImpl implements SpatialLayerService {
     private SpatialDataService spatialDataService;
     @Autowired
     private SpatialDataAttributeService spatialDataAttributeService;
+
+    @Autowired
+    private SpatialLayerStyleService spatialLayerStyleService;
 
     @Autowired
     private SessionFactory sessionFactory;
@@ -106,11 +106,13 @@ public class SpatialLayerServiceImpl implements SpatialLayerService {
     }
 
     @Transactional
-    public void deleteSpatialLayer(LayerDTO layerDTO) {
+    public void deleteSpatialLayer(Long layerId) {
+        spatialDataAttributeService.deleteAttributesValuesForLayer(layerId);
+        attributeService.deleteAttributesForLayer(layerId);
+        spatialDataService.deleteSpatialDataForLayer(layerId);
+        spatialLayerStyleService.deleteStyles(layerId);
         SpatialLayer spatialLayer = new SpatialLayer();
-        spatialLayer.setSpatialLayerId(layerDTO.getLayerId());
-        spatialLayer.setEpsgCode(layerDTO.getEpsgCode());
-        spatialLayer.setLayerName(layerDTO.getLayerName());
+        spatialLayer.setSpatialLayerId(layerId);
         spatialLayerDAO.remove(spatialLayer);
     }
 
