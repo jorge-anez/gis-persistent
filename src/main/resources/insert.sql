@@ -5,6 +5,7 @@ INSERT INTO t_style (style_name, geometry_type_style, default_value) VALUE
 , ('fill-opacity',  'Point', '0.5')
 , ('WellKnownName', 'Point', 'circle')
 , ('Rotation',      'Point', '0')
+, ('label',         'Point', 'geometryType')
 
 
 , ('stroke',            'Line', '#000000')
@@ -16,7 +17,7 @@ INSERT INTO t_style (style_name, geometry_type_style, default_value) VALUE
 , ('fill-opacity',      'Line', '0.5')
 , ('WellKnownName',     'Line', 'circle')
 , ('Rotation',          'Line', '0')
-
+, ('label',             'Line', 'geometryType')
 
 , ('stroke',              'Polygon', '#FFFFFF')
 , ('stroke-width',        'Polygon', '2')
@@ -28,6 +29,7 @@ INSERT INTO t_style (style_name, geometry_type_style, default_value) VALUE
 , ('WellKnownName',       'Polygon', 'shape://times')
 , ('PerpendicularOffset', 'Polygon', '2')
 , ('Rotation',            'Polygon', '0')
+, ('label',               'Polygon', 'geometryType')
 
 , ('font-family',    'Text', 'Arial')
 , ('font-size',      'Text', '12')
