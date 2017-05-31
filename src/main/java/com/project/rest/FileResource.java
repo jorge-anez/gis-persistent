@@ -1,5 +1,6 @@
 package com.project.rest;
 
+import com.project.model.transfer.AttributeDTO;
 import com.project.model.transfer.FileUploadForm;
 import com.project.model.transfer.LayerDTO;
 import com.project.services.SpatialDataService;
@@ -28,18 +29,22 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.filter.Filter;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.*;
 import java.util.zip.ZipEntry;
@@ -60,6 +65,35 @@ public class FileResource {
 
     @Value("${dir.upload.cache}")
     private String dirTemp;
+
+    @Value(value = "classpath:base-layer/oruro/oruro.shp")
+    private URL baseLayerResource;
+
+    @PostConstruct
+    public void init() throws Exception {
+        LayerDTO layerDTO = spatialLayerService.getBaseLayer();
+        if(layerDTO == null) {
+            FeatureCollection<SimpleFeatureType, SimpleFeature> collection = readSHP(baseLayerResource.getPath());
+            layerDTO = new LayerDTO();
+            String layerName = StringUtils.getFilename(baseLayerResource.getPath());
+            Integer epsgCode = CRS.lookupEpsgCode(collection.getSchema().getCoordinateReferenceSystem(), true);
+            layerDTO.setLayerName(layerName);
+            layerDTO.setEpsgCode(epsgCode);
+            layerDTO.setBaseLayer(Boolean.TRUE);
+            spatialLayerService.createSpatialLayer(null, layerDTO);
+            List<AttributeDTO> attrs = new ArrayList<AttributeDTO>();
+            for (AttributeDescriptor e: collection.getSchema().getAttributeDescriptors()) {
+                if(e.getName().toString().equals("the_geom")) continue;
+
+                AttributeDTO attr = new AttributeDTO();
+                attr.setAttributeName(e.getName().toString());
+                attr.setAttributeType(e.getType().toString());
+                attrs.add(attr);
+            }
+            spatialLayerService.createLayerFeatures(layerDTO.getLayerId(), collection, attrs);
+        }
+
+    }
 
     @RequestMapping(value="/layer/{layerId}/download", method= RequestMethod.GET)
     public void downloadLayer(@PathVariable("layerId") Long layerId, HttpServletResponse response){

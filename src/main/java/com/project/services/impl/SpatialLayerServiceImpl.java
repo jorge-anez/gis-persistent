@@ -92,6 +92,7 @@ public class SpatialLayerServiceImpl implements SpatialLayerService {
         }
         spatialLayer.setEpsgCode(layerDTO.getEpsgCode());
         spatialLayer.setLayerName(layerDTO.getLayerName());
+        spatialLayer.setBaseLayer(layerDTO.getBaseLayer());
         spatialLayerDAO.save(spatialLayer);
         layerDTO.setLayerId(spatialLayer.getSpatialLayerId());
     }

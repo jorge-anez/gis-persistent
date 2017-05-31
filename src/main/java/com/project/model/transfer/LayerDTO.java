@@ -15,7 +15,7 @@ public class LayerDTO {
     private Long layerId;
     private String layerName;
     private Integer epsgCode;
-
+    private Boolean baseLayer;
     public Long getLayerId() {
         return layerId;
     }
@@ -38,5 +38,13 @@ public class LayerDTO {
 
     public void setEpsgCode(Integer epsgCode) {
         this.epsgCode = epsgCode;
+    }
+
+    public Boolean getBaseLayer() {
+        return baseLayer;
+    }
+
+    public void setBaseLayer(Boolean baseLayer) {
+        this.baseLayer = baseLayer;
     }
 }
