@@ -35,7 +35,10 @@ import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -69,6 +72,9 @@ public class FileResource {
     @Value(value = "classpath:base-layer/oruro/oruro.shp")
     private URL baseLayerResource;
 
+    @Autowired
+    DriverManagerDataSource dataSource;
+
     @PostConstruct
     public void init() throws Exception {
         LayerDTO layerDTO = spatialLayerService.getBaseLayer();
@@ -92,6 +98,12 @@ public class FileResource {
             }
             spatialLayerService.createLayerFeatures(layerDTO.getLayerId(), collection, attrs);
         }
+
+        Resource resource = new ClassPathResource("insert.sql");
+        ResourceDatabasePopulator databasePopulator = new ResourceDatabasePopulator();
+        databasePopulator.addScript(resource);
+        databasePopulator.setContinueOnError(Boolean.TRUE);
+        databasePopulator.populate(dataSource.getConnection());
 
     }
 
@@ -128,6 +140,7 @@ public class FileResource {
             response.reset();
             response.resetBuffer();
             response.setContentType("application/zip");
+            response.addHeader("Content-disposition", String.format("attachment; filename=\"%s.zip\"", layerDTO.getLayerName()));
             ServletOutputStream ouputStream = response.getOutputStream();
             InputStream inputStream = new FileInputStream(dirTemp + "/" + layerName + ".zip");
             IOUtils.copy(inputStream, ouputStream);

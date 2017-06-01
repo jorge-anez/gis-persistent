@@ -25,7 +25,7 @@ public class SpatialLayer {
     private Boolean baseLayer = Boolean.FALSE;
 
     @ManyToOne
-    @JoinColumn(name="project_id")
+    @JoinColumn(name="id_project")
     private Project project;
 
     @OneToMany(mappedBy="spatialLayer")
