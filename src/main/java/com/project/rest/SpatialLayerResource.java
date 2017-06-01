@@ -227,6 +227,7 @@ public class SpatialLayerResource {
         SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
         builder.setName("Location");
         builder.add("geometry", Geometry.class);
+        builder.add("geometryType", String.class);
         for (AttributeDTO e: attributes)
             builder.add(e.getAttributeName(), Class.forName("java.lang." + e.getAttributeType()));
         final SimpleFeatureType featureType = builder.buildFeatureType();
