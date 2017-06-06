@@ -69,7 +69,7 @@ public class FileResource {
     @Value("${dir.upload.cache}")
     private String dirTemp;
 
-    @Value(value = "classpath:base-layer/oruro/oruro.shp")
+    @Value(value = "classpath:shape-files/base-layer/oruro.shp")
     private URL baseLayerResource;
 
     @Autowired
@@ -99,7 +99,7 @@ public class FileResource {
             spatialLayerService.createLayerFeatures(layerDTO.getLayerId(), collection, attrs);
         }
 
-        Resource resource = new ClassPathResource("insert.sql");
+        Resource resource = new ClassPathResource("sql-scripts/insert.sql");
         ResourceDatabasePopulator databasePopulator = new ResourceDatabasePopulator();
         databasePopulator.addScript(resource);
         databasePopulator.setContinueOnError(Boolean.TRUE);

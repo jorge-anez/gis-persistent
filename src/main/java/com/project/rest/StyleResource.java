@@ -147,6 +147,22 @@ public class StyleResource {
         }
     }
 
+    @RequestMapping(value = "/layer/baseSLD", method=RequestMethod.GET, produces = MediaType.APPLICATION_XML_VALUE)
+    public void getBaseSLD(HttpServletResponse response){
+        try {
+            String result = spatialLayerStyleService.readBaseSLDStyle();
+            response.reset();
+            response.resetBuffer();
+            response.setContentType("application/xml");
+            ServletOutputStream ouputStream = response.getOutputStream();
+            IOUtils.write(result, ouputStream);
+            ouputStream.flush();
+            ouputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     @RequestMapping(value = "/layer/{layerId}/sld", method=RequestMethod.GET, produces = MediaType.APPLICATION_XML_VALUE)
     public void getSLD(@PathVariable("layerId") Long layerId, HttpServletResponse response){
         try {

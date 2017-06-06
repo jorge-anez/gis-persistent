@@ -2,6 +2,7 @@ package com.project.services.impl;
 
 import com.project.dao.GenericDAOImpl;
 import com.project.model.domain.*;
+import com.project.model.transfer.LayerDTO;
 import com.project.services.*;
 import com.vividsolutions.jts.geom.Geometry;
 import org.apache.commons.io.IOUtils;
@@ -33,8 +34,12 @@ public class SpatialLayerStyleServiceImpl implements SpatialLayerStyleService {
     @Autowired
     private SessionFactory sessionFactory;
     private GenericDAOImpl<SpatialLayerStyle, Long> spatialLayerStyleDAO;
-    @Value(value = "classpath:defaultStyle.sld")
-    private Resource sldResouce;
+
+    @Value(value = "classpath:map-styles/default-style.sld")
+    private Resource defaultSLD;
+
+    @Value(value = "classpath:map-styles/base-style.sld")
+    private Resource baseSLD;
 
     @PostConstruct
     public void init() {
@@ -91,7 +96,7 @@ public class SpatialLayerStyleServiceImpl implements SpatialLayerStyleService {
 
     @Transactional
     public String readSLDStyle(Long layerId) throws Exception {
-        InputStream input = sldResouce.getInputStream();
+        InputStream input = defaultSLD.getInputStream();
         String buffer = IOUtils.toString(input);
         List<String> vars = find(buffer);
         String result = "";
@@ -103,6 +108,13 @@ public class SpatialLayerStyleServiceImpl implements SpatialLayerStyleService {
         }
         input.close();
         return result;
+    }
+
+    @Transactional
+    public String readBaseSLDStyle() throws Exception {
+        InputStream input = baseSLD.getInputStream();
+        String buffer = IOUtils.toString(input);
+        return buffer;
     }
 
     @Transactional
