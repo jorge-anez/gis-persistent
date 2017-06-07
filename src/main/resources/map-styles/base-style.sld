@@ -100,18 +100,24 @@
                     </ogc:Filter>
                     <PolygonSymbolizer>
                         <Fill>
-                            <CssParameter name="fill">#00FF00</CssParameter>
+                            <CssParameter name="fill">#f28d6d</CssParameter>
                             <CssParameter name="fill-opacity">0.5</CssParameter>
                         </Fill>
                         <Stroke>
-                            <CssParameter name="stroke">#00FF00</CssParameter>
+                            <CssParameter name="stroke">#63533e</CssParameter>
                             <CssParameter name="stroke-width">2</CssParameter>
                         </Stroke>
                     </PolygonSymbolizer>
                     <TextSymbolizer>
                         <Label>
-                            <ogc:PropertyName>NOM_DEP</ogc:PropertyName>
+                            <ogc:PropertyName>NOM_MUN</ogc:PropertyName>
                         </Label>
+                        <Halo>
+                            <Radius>3</Radius>
+                            <Fill>
+                                 <CssParameter name="fill">#FFFFFF</CssParameter>
+                            </Fill>
+                        </Halo>
                     </TextSymbolizer>
                 </Rule>
 
