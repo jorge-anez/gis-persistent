@@ -17,10 +17,16 @@
             <sld:FeatureTypeStyle>
                 <Rule>
                     <ogc:Filter>
-                        <ogc:PropertyIsEqualTo>
-                            <ogc:PropertyName>geometryType</ogc:PropertyName>
-                            <ogc:Literal>Point</ogc:Literal>
-                        </ogc:PropertyIsEqualTo>
+                        <ogc:Or>
+                            <ogc:PropertyIsEqualTo>
+                                <ogc:PropertyName>geometryType</ogc:PropertyName>
+                                <ogc:Literal>Point</ogc:Literal>
+                            </ogc:PropertyIsEqualTo>
+                            <ogc:PropertyIsEqualTo>
+                                <ogc:PropertyName>geometryType</ogc:PropertyName>
+                                <ogc:Literal>MultiPoint</ogc:Literal>
+                            </ogc:PropertyIsEqualTo>
+                        </ogc:Or>
                     </ogc:Filter>
                     <PointSymbolizer>
                         <Graphic>
@@ -41,7 +47,7 @@
                     </PointSymbolizer>
                     <TextSymbolizer>
                         <Label>
-                            <ogc:PropertyName>${NOM_MUN}</ogc:PropertyName>
+                            <ogc:PropertyName>NOM_DEP</ogc:PropertyName>
                         </Label>
                         <Fill>
                             <CssParameter name="fill">#000000</CssParameter>
@@ -69,7 +75,7 @@
                     </LineSymbolizer>
                     <TextSymbolizer>
                         <Label>
-                            <ogc:PropertyName>${NOM_NUM}</ogc:PropertyName>
+                            <ogc:PropertyName>NOM_DEP</ogc:PropertyName>
                         </Label>
                         <LabelPlacement>
                             <LinePlacement />
@@ -81,10 +87,16 @@
                 </Rule>
                 <Rule>
                     <ogc:Filter>
-                        <ogc:PropertyIsEqualTo>
-                            <ogc:PropertyName>geometryType</ogc:PropertyName>
-                            <ogc:Literal>Polygon</ogc:Literal>
-                        </ogc:PropertyIsEqualTo>
+                        <ogc:Or>
+                            <ogc:PropertyIsEqualTo>
+                                <ogc:PropertyName>geometryType</ogc:PropertyName>
+                                <ogc:Literal>Polygon</ogc:Literal>
+                            </ogc:PropertyIsEqualTo>
+                            <ogc:PropertyIsEqualTo>
+                                <ogc:PropertyName>geometryType</ogc:PropertyName>
+                                <ogc:Literal>MultiPolygon</ogc:Literal>
+                            </ogc:PropertyIsEqualTo>
+                        </ogc:Or>
                     </ogc:Filter>
                     <PolygonSymbolizer>
                         <Fill>
@@ -98,7 +110,7 @@
                     </PolygonSymbolizer>
                     <TextSymbolizer>
                         <Label>
-                            <ogc:PropertyName>${NOM_MUN}</ogc:PropertyName>
+                            <ogc:PropertyName>NOM_DEP</ogc:PropertyName>
                         </Label>
                     </TextSymbolizer>
                 </Rule>
