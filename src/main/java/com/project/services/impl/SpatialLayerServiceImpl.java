@@ -121,7 +121,7 @@ public class SpatialLayerServiceImpl implements SpatialLayerService {
     public LayerDTO getBaseLayer() {
         Criterion criterion = Restrictions.eq("baseLayer", true);
         List<SpatialLayer> layers = spatialLayerDAO.findByCriteria(criterion);
-        if(layers != null && layers.size() == 1) {
+        if(layers != null && layers.size() > 0) {
             LayerDTO layerDTO = new LayerDTO();
             SpatialLayer layer = layers.get(0);
             layerDTO.setLayerId(layer.getSpatialLayerId());

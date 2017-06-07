@@ -30,6 +30,7 @@ import org.json.simple.parser.JSONParser;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
+import org.opengis.feature.type.PropertyDescriptor;
 import org.opengis.filter.Filter;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
@@ -79,21 +80,22 @@ public class FileResource {
     public void init() throws Exception {
         LayerDTO layerDTO = spatialLayerService.getBaseLayer();
         if(layerDTO == null) {
-            FeatureCollection<SimpleFeatureType, SimpleFeature> collection = readSHP(baseLayerResource.getPath());
+            FeatureCollection<SimpleFeatureType, SimpleFeature> collection = readSHP(baseLayerResource.getFile());
             layerDTO = new LayerDTO();
-            String layerName = StringUtils.getFilename(baseLayerResource.getPath());
+            String layerName = StringUtils.getFilename(baseLayerResource.getFile());
             Integer epsgCode = CRS.lookupEpsgCode(collection.getSchema().getCoordinateReferenceSystem(), true);
             layerDTO.setLayerName(layerName);
             layerDTO.setEpsgCode(epsgCode);
             layerDTO.setBaseLayer(Boolean.TRUE);
             spatialLayerService.createSpatialLayer(null, layerDTO);
             List<AttributeDTO> attrs = new ArrayList<AttributeDTO>();
-            for (AttributeDescriptor e: collection.getSchema().getAttributeDescriptors()) {
+
+            for (PropertyDescriptor e: collection.getSchema().getDescriptors()) {
                 if(e.getName().toString().equals("the_geom")) continue;
 
                 AttributeDTO attr = new AttributeDTO();
                 attr.setAttributeName(e.getName().toString());
-                attr.setAttributeType(e.getType().toString());
+                attr.setAttributeType(e.getType().getBinding().getSimpleName());
                 attrs.add(attr);
             }
             spatialLayerService.createLayerFeatures(layerDTO.getLayerId(), collection, attrs);
