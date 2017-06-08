@@ -78,6 +78,9 @@ public class FileResource {
 
     @PostConstruct
     public void init() throws Exception {
+        File cacheDir = new File(dirTemp);
+        if(!cacheDir.exists())
+            cacheDir.mkdirs();
         LayerDTO layerDTO = spatialLayerService.getBaseLayer();
         if(layerDTO == null) {
             FeatureCollection<SimpleFeatureType, SimpleFeature> collection = readSHP(baseLayerResource.getFile());
@@ -220,6 +223,7 @@ public class FileResource {
                 jsonObject.put("name", fileName);
                 jsonObject.put("data", geoJson);
             } catch (Exception e) {
+                e.printStackTrace();
                 jsonObject.put("success", Boolean.FALSE);
             }
         }
