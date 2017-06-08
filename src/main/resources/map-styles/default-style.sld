@@ -81,10 +81,16 @@
                 </Rule>
                 <Rule>
                     <ogc:Filter>
-                        <ogc:PropertyIsEqualTo>
-                            <ogc:PropertyName>geometryType</ogc:PropertyName>
-                            <ogc:Literal>Polygon</ogc:Literal>
-                        </ogc:PropertyIsEqualTo>
+                        <ogc:Or>
+                            <ogc:PropertyIsEqualTo>
+                                <ogc:PropertyName>geometryType</ogc:PropertyName>
+                                <ogc:Literal>Polygon</ogc:Literal>
+                            </ogc:PropertyIsEqualTo>
+                            <ogc:PropertyIsEqualTo>
+                                <ogc:PropertyName>geometryType</ogc:PropertyName>
+                                <ogc:Literal>MultiPolygon</ogc:Literal>
+                            </ogc:PropertyIsEqualTo>
+                        </ogc:Or>
                     </ogc:Filter>
                     <PolygonSymbolizer>
                         <Fill>
