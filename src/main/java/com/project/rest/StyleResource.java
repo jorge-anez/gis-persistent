@@ -1,6 +1,7 @@
 package com.project.rest;
 
 import com.project.model.transfer.BaseResponse;
+import com.project.model.transfer.LayerDTO;
 import com.project.services.SpatialDataService;
 import com.project.services.SpatialLayerService;
 import com.project.services.SpatialLayerStyleService;
@@ -8,7 +9,9 @@ import com.vividsolutions.jts.geom.*;
 import com.vividsolutions.jts.geom.Polygon;
 import org.apache.commons.io.IOUtils;
 import org.geotools.data.DataUtilities;
+import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.feature.DefaultFeatureCollection;
+import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.geotools.geometry.jts.ReferencedEnvelope;
@@ -23,6 +26,9 @@ import org.geotools.xml.Configuration;
 import org.geotools.xml.Parser;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.filter.Filter;
+import org.opengis.filter.FilterFactory;
+import org.opengis.filter.FilterFactory2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -38,6 +44,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +54,8 @@ import java.util.regex.Pattern;
 @RestController
 @RequestMapping("/style")
 public class StyleResource {
+    static StyleFactory styleFactory = CommonFactoryFinder.getStyleFactory();
+    static FilterFactory filterFactory = CommonFactoryFinder.getFilterFactory();
 
     @Autowired
     private SpatialLayerStyleService spatialLayerStyleService;
@@ -58,64 +67,41 @@ public class StyleResource {
     @Value("${dir.upload.cache}")
     private String dirTemp;
 
+    @Value(value = "classpath:map-styles/simple-report.sld")
+    private URL reportsSLD;
+
     @RequestMapping(value = "/default", method=RequestMethod.GET, produces = MediaType.IMAGE_PNG_VALUE)
-    public void downloadLayer(HttpServletResponse response){
+    public void downloadLayer(@RequestParam List<String> geoCodes, HttpServletResponse response){
         try {
-            //SLDParser stylereader = new SLDParser(styleFactory, url);
-            // create the parser with the sld configuration
+            LayerDTO layerDTO = spatialLayerService.getBaseLayer();
+            FeatureCollection<SimpleFeatureType, SimpleFeature> features = spatialLayerService.getLayerInfo(layerDTO.getLayerId());
+            FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2();
+            List<Filter> match = new ArrayList<Filter>();
+            for (String geoCode : geoCodes) {
+                Filter aMatch = ff.equals(ff.property("CODE"), ff.literal(geoCode));
+                match.add(aMatch);
+            }
 
-            Configuration configuration = new SLDConfiguration();
-            Parser parser = new Parser(configuration);
-            InputStream xml = new FileInputStream(dirTemp + "/defaultStyle.sld");
-            StyledLayerDescriptor sld = (StyledLayerDescriptor) parser.parse(xml);
-            xml.close();
+            Filter filter = ff.or(match);
+            FeatureCollection<SimpleFeatureType, SimpleFeature> resultFeatures = features.subCollection(filter);
 
-            GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
-            Coordinate[] coords  = new Coordinate[] {new Coordinate(0, 2), new Coordinate(2, 0), new Coordinate(8, 6) };
-            LineString line = geometryFactory.createLineString(coords);
+            SLDParser stylereader = new SLDParser(styleFactory, reportsSLD);
+            Style[] style = stylereader.readXML();
 
-
-            Coordinate[] coords1  = new Coordinate[] {new Coordinate(4, 0), new Coordinate(2, 2),
-                            new Coordinate(4, 4), new Coordinate(6, 2), new Coordinate(4, 0) };
-            Polygon polygon = geometryFactory.createPolygon(coords1);
-
-            SimpleFeatureType type = DataUtilities.createType("location","geom:LineString,name:String");
-            SimpleFeatureType type1 = DataUtilities.createType("location","geom:Polygon,name:String");
-            DefaultFeatureCollection featureCollection = new DefaultFeatureCollection("style");
-
-            SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
-            builder.set("geom", line);
-            builder.set("name", "line");
-            featureCollection.add(builder.buildFeature("1"));
-
-            builder = new SimpleFeatureBuilder(type1);
-            builder.set("geom", polygon);
-            builder.set("name", "polygon");
-            featureCollection.add(builder.buildFeature("2"));
+            //Style s = style[0];
+            System.out.println(resultFeatures.size());
 
             MapContent map = new MapContent();
             map.setTitle("Styling");
 
-
-
-            FeatureTypeStyle[] styles = SLD.featureTypeStyles(sld);
-            FeatureTypeStyle typeStyle = styles[0];//SLD.featureTypeStyle(sld, type);
-
-            StyleBuilder styleBuilder = new StyleBuilder();
-            Style style = styleBuilder.createStyle();
-            style.featureTypeStyles().add(typeStyle);
-            style.featureTypeStyles().add(styles[1]);
-            //style.featureTypeStyles().add(styles[1]);
-            String str = "joder";
-
-            Layer layer = new FeatureLayer(featureCollection, style);
-            map.addLayer(layer);
-
+            //Layer layer = new FeatureLayer(features, style[0]);
+            map.addLayer(new FeatureLayer(features, style[0]));
+            map.addLayer(new FeatureLayer(resultFeatures, style[1]));
 
             GTRenderer renderer = new StreamingRenderer();
             renderer.setMapContent(map);
 
-            int imageWidth = 250;
+            int imageWidth = 680;
             Rectangle imageBounds = null;
             ReferencedEnvelope mapBounds = null;
             mapBounds = map.getMaxBounds();
@@ -130,18 +116,11 @@ public class StyleResource {
 
             response.reset();
             response.resetBuffer();
-            response.setContentType("image/png");
+            response.setContentType("image/jpg");
             ServletOutputStream ouputStream = response.getOutputStream();
-            ImageIO.write(image, "png", ouputStream);
+            ImageIO.write(image, "jpg", ouputStream);
             ouputStream.flush();
             ouputStream.close();
-            /*
-            String string = "${Point.stroke}ksklsk${Point.fill}";
-            List<String> list = find(string);
-            Map<String, String> result =  spatialLayerStyleService.getSpatialLayerStyles(0L, list);
-            System.out.println(replaceVariables(string, result));
-            */
-
         } catch (Exception e) {
             e.printStackTrace();
         }
