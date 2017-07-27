@@ -125,7 +125,7 @@ public class FileResource {
                 String classType = feature.getDefaultGeometry().getClass().getSimpleName().toLowerCase();
                 DefaultFeatureCollection collection = collectionMap.get(classType);
                 if(collection == null) {
-                    collection = new DefaultFeatureCollection(null, features.getSchema());
+                    collection = new DefaultFeatureCollection(null, feature.getFeatureType());
                     collectionMap.put(classType, collection);
                 }
                 collection.add(feature);
