@@ -30,6 +30,9 @@ import java.util.regex.Pattern;
 @Service
 public class SpatialLayerStyleServiceImpl implements SpatialLayerStyleService {
     @Autowired
+    private SpatialLayerService spatialLayerService;
+
+    @Autowired
     private StyleService styleService;
     @Autowired
     private SessionFactory sessionFactory;
@@ -40,6 +43,9 @@ public class SpatialLayerStyleServiceImpl implements SpatialLayerStyleService {
 
     @Value(value = "classpath:map-styles/base-style.sld")
     private Resource baseSLD;
+
+    @Value(value = "classpath:map-styles/clasificacion-sectorial.sld")
+    private Resource clasificacionSectorialSLD;
 
     @PostConstruct
     public void init() {
@@ -96,7 +102,13 @@ public class SpatialLayerStyleServiceImpl implements SpatialLayerStyleService {
 
     @Transactional
     public String readSLDStyle(Long layerId) throws Exception {
-        InputStream input = defaultSLD.getInputStream();
+        LayerDTO layer = spatialLayerService.getLayerById(layerId);
+        InputStream input = null;
+        if(layer.getLayerType().equals("CLASIFICACION_SECTORIAL"))
+            input = clasificacionSectorialSLD.getInputStream();
+        else
+            input = defaultSLD.getInputStream();
+
         String buffer = IOUtils.toString(input);
         List<String> vars = find(buffer);
         String result = "";

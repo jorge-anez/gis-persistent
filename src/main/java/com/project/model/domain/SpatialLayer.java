@@ -21,8 +21,7 @@ public class SpatialLayer {
     private Long spatialLayerId;
     private String layerName;
     private Integer epsgCode;
-    @Type(type="yes_no")
-    private Boolean baseLayer = Boolean.FALSE;
+    private String layerType = "LAYER";
 
     @ManyToOne
     @JoinColumn(name="id_project")
@@ -86,11 +85,19 @@ public class SpatialLayer {
         this.attributes = attributes;
     }
 
-    public Boolean getBaseLayer() {
-        return baseLayer;
+    public String getLayerType() {
+        return layerType;
     }
 
-    public void setBaseLayer(Boolean baseLayer) {
-        this.baseLayer = baseLayer;
+    public void setLayerType(String layerType) {
+        this.layerType = layerType;
+    }
+
+    public Collection<SpatialLayerStyle> getLayerStyles() {
+        return layerStyles;
+    }
+
+    public void setLayerStyles(Collection<SpatialLayerStyle> layerStyles) {
+        this.layerStyles = layerStyles;
     }
 }

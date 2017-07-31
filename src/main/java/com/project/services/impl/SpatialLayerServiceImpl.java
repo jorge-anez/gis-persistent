@@ -72,6 +72,7 @@ public class SpatialLayerServiceImpl implements SpatialLayerService {
         LayerDTO layerDTO= new LayerDTO();
         layerDTO.setEpsgCode(spatialLayer.getEpsgCode());
         layerDTO.setLayerName(spatialLayer.getLayerName());
+        layerDTO.setLayerType(spatialLayer.getLayerType());
         layerDTO.setLayerId(spatialLayer.getSpatialLayerId());
         return layerDTO;
     }
@@ -92,7 +93,7 @@ public class SpatialLayerServiceImpl implements SpatialLayerService {
         }
         spatialLayer.setEpsgCode(layerDTO.getEpsgCode());
         spatialLayer.setLayerName(layerDTO.getLayerName());
-        spatialLayer.setBaseLayer(layerDTO.getBaseLayer());
+        spatialLayer.setLayerType(layerDTO.getLayerType());
         spatialLayerDAO.save(spatialLayer);
         layerDTO.setLayerId(spatialLayer.getSpatialLayerId());
     }
@@ -119,7 +120,23 @@ public class SpatialLayerServiceImpl implements SpatialLayerService {
 
     @Transactional
     public LayerDTO getBaseLayer() {
-        Criterion criterion = Restrictions.eq("baseLayer", true);
+        Criterion criterion = Restrictions.eq("layerType", "BASE_LAYER");
+        List<SpatialLayer> layers = spatialLayerDAO.findByCriteria(criterion);
+        if(layers != null && layers.size() > 0) {
+            LayerDTO layerDTO = new LayerDTO();
+            SpatialLayer layer = layers.get(0);
+            layerDTO.setLayerId(layer.getSpatialLayerId());
+            layerDTO.setLayerName(layer.getLayerName());
+            layerDTO.setEpsgCode(layer.getEpsgCode());
+            return layerDTO;
+        }
+
+        return null;
+    }
+
+    @Transactional
+    public LayerDTO getClasificacionSectorialLayer() {
+        Criterion criterion = Restrictions.eq("layerType", "CLASIFICACION_SECTORIAL");
         List<SpatialLayer> layers = spatialLayerDAO.findByCriteria(criterion);
         if(layers != null && layers.size() > 0) {
             LayerDTO layerDTO = new LayerDTO();

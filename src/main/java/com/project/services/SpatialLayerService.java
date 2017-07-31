@@ -19,6 +19,7 @@ public interface SpatialLayerService {
     void updateSpatialLayer(LayerDTO layerDTO);
     void deleteSpatialLayer(Long layerId);
     LayerDTO getBaseLayer();
+    LayerDTO getClasificacionSectorialLayer();
     List<LayerDTO> list(Long projectId);
     void createLayerFeatures(Long layerId, FeatureCollection<SimpleFeatureType, SimpleFeature> collection, List<AttributeDTO> attributes);
     void updateLayerFeatures(LayerDTO layerDTO, FeatureCollection<SimpleFeatureType, SimpleFeature> collection);

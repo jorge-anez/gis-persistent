@@ -89,7 +89,7 @@ public class FileResource {
             Integer epsgCode = CRS.lookupEpsgCode(collection.getSchema().getCoordinateReferenceSystem(), true);
             layerDTO.setLayerName(layerName);
             layerDTO.setEpsgCode(epsgCode);
-            layerDTO.setBaseLayer(Boolean.TRUE);
+            layerDTO.setLayerType("BASE_LAYER");
             spatialLayerService.createSpatialLayer(null, layerDTO);
             List<AttributeDTO> attrs = new ArrayList<AttributeDTO>();
 
